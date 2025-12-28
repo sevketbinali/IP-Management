@@ -189,6 +189,13 @@ class IPManagementService:
             raise VLANConfigurationError(f"VLAN {vlan_id} not found")
         return vlan
     
+    async def list_vlans(self, active_only: bool = True) -> List[VLAN]:
+        """List all VLANs."""
+        query = self.db.query(VLAN)
+        if active_only:
+            query = query.filter(VLAN.is_active == True)
+        return query.all()
+    
     async def calculate_vlan_parameters(
         self, 
         vlan_id: int, 

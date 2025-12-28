@@ -7,6 +7,7 @@ Environment-based configuration for different deployment scenarios
 
 import os
 from typing import List, Optional
+from pydantic import field_validator
 from pydantic_settings import BaseSettings
 
 
@@ -19,7 +20,7 @@ class Settings(BaseSettings):
     debug: bool = False
     
     # Database
-    database_url: str = "postgresql://postgres:password@localhost:5432/ip_management"
+    database_url: str = "postgresql://postgres:secure_password_change_in_production@postgres:5432/ip_management"
     database_echo: bool = False
     
     # Security
@@ -46,6 +47,14 @@ class Settings(BaseSettings):
     plant_code: str = "BURSA"
     organization: str = "Bosch Rexroth"
     security_compliance_check_days: int = 30
+    
+    @field_validator('allowed_hosts', 'cors_origins', mode='before')
+    @classmethod
+    def parse_comma_separated_list(cls, v):
+        """Parse comma-separated strings into lists."""
+        if isinstance(v, str):
+            return [item.strip() for item in v.split(',') if item.strip()]
+        return v
     
     class Config:
         env_file = ".env"

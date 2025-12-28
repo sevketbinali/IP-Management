@@ -26,6 +26,25 @@ def get_ip_service(db: Session = Depends(get_db)) -> IPManagementService:
     return IPManagementService(db)
 
 
+@router.get("/vlans", response_model=List[VLAN])
+async def list_vlans(
+    service: IPManagementService = Depends(get_ip_service)
+):
+    """
+    List all VLANs in the system.
+    
+    Returns a list of all configured VLANs with their network parameters
+    and current IP allocation status.
+    """
+    try:
+        return await service.list_vlans()
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to retrieve VLANs: {str(e)}"
+        )
+
+
 @router.post("/vlans", response_model=VLAN, status_code=status.HTTP_201_CREATED)
 async def create_vlan(
     vlan_data: VLANCreate,
