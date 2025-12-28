@@ -88,8 +88,6 @@ docker compose up -d
 docker compose logs -f
 ```
 
-**Note**: The frontend uses a simple static HTML interface for maximum compatibility. If you prefer the React version, you can switch the Dockerfile in docker-compose.yml from `Dockerfile.simple` to `Dockerfile.frontend`.
-
 ### 4. Initialize Sample Data (Optional)
 ```bash
 # Wait for services to be healthy (30-60 seconds)
@@ -100,22 +98,55 @@ docker compose exec api python scripts/init-sample-data.py
 ```
 
 ### 5. Access Application
-- **Frontend**: http://localhost:3000
+- **Frontend (React UI)**: http://localhost:3000
 - **API Documentation**: http://localhost:8000/api/docs
 - **Health Check**: http://localhost:8000/health
+
+## 🖥️ Frontend Interface
+
+The system now includes a **professional React/TypeScript frontend** optimized for industrial network operations:
+
+### Key Features
+- **Industrial-Grade UI**: Designed for IT/OT network administrators and technicians
+- **Real-time Validation**: Immediate feedback on network configuration errors
+- **Reserved IP Protection**: Visual indicators for first 6 + last IP addresses
+- **Responsive Design**: Works on desktop and tablet devices in production environments
+- **Accessibility**: WCAG AAA compliant with keyboard navigation and screen reader support
+
+### Interface Sections
+1. **Dashboard**: System overview, health monitoring, and quick actions
+2. **Domain Management**: Create and manage business domains (MFG, LOG, FCM, ENG)
+3. **VLAN Management**: Configure VLANs with automatic IP range calculation
+4. **IP Management**: Assign IP addresses to devices with MAC address tracking
+5. **Reports**: Network hierarchy visualization and compliance reporting
+
+### Frontend Technology Stack
+- **React 18** with TypeScript for type safety
+- **Tailwind CSS** for industrial-grade styling
+- **Zustand** for state management
+- **React Hook Form + Zod** for form validation
+- **Axios** with retry logic and caching
 
 ## 📁 Project Structure
 
 ```
 ip-management/
 ├── docker-compose.yml          # Main orchestration file
-├── Dockerfile.backend          # Backend container definition
+├── Dockerfile.backend         # Backend container definition
 ├── .env.example               # Environment template
 ├── .env                       # Your configuration (create from example)
 ├── frontend/
-│   ├── Dockerfile.frontend    # Frontend container definition
+│   ├── Dockerfile.frontend    # React frontend container
+│   ├── Dockerfile.simple      # Simple HTML fallback
+│   ├── package.json          # Frontend dependencies
+│   ├── src/                  # React/TypeScript source code
+│   │   ├── components/       # UI components
+│   │   ├── services/         # API services
+│   │   ├── stores/           # State management
+│   │   ├── types/            # TypeScript definitions
+│   │   └── utils/            # Utility functions
 │   ├── nginx.conf            # Frontend web server config
-│   └── docker-entrypoint.sh  # Runtime configuration script
+│   └── .env.example          # Frontend environment template
 ├── nginx/
 │   └── nginx.conf            # Reverse proxy config (production)
 ├── scripts/
@@ -143,10 +174,35 @@ POSTGRES_PORT=5432     # Database (usually keep default)
 
 # Bosch Rexroth Configuration
 PLANT_CODE=BURSA
-ORGANIZATION=Bosch Rexroth
+ORGANIZATION="Bosch Rexroth"
 
-# Frontend API Connection
-REACT_APP_API_URL=http://localhost:8000/api/v1
+# Frontend Configuration
+FRONTEND_API_URL=http://localhost:8000/api/v1
+FRONTEND_API_TIMEOUT=30000
+FRONTEND_CACHE_DURATION=300000
+FRONTEND_PAGINATION_SIZE=50
+FRONTEND_ENABLE_DEBUG=false
+FRONTEND_ENABLE_ANALYTICS=true
+```
+
+### Frontend Environment Variables
+
+The frontend supports additional configuration in `frontend/.env`:
+
+```bash
+# API Configuration
+VITE_API_URL=http://localhost:8000/api/v1
+VITE_PLANT_CODE=BURSA
+VITE_ORGANIZATION="Bosch Rexroth"
+
+# Performance Settings
+VITE_API_TIMEOUT=30000
+VITE_CACHE_DURATION=300000
+VITE_PAGINATION_SIZE=50
+
+# Feature Flags
+VITE_ENABLE_DEBUG=false
+VITE_ENABLE_ANALYTICS=true
 ```
 
 ### Key Configuration Options
@@ -158,6 +214,7 @@ REACT_APP_API_URL=http://localhost:8000/api/v1
 | `API_PORT` | Backend API port | `8000` |
 | `FRONTEND_PORT` | Frontend web port | `3000` |
 | `PLANT_CODE` | Factory identifier | `BURSA` |
+| `FRONTEND_API_URL` | Frontend API endpoint | `http://localhost:8000/api/v1` |
 | `LOG_LEVEL` | Logging verbosity | `INFO` |
 
 ## 🐳 Docker Commands
@@ -178,7 +235,7 @@ docker compose up -d
 docker compose up
 
 # Start specific services
-docker compose up -d postgres redis
+docker compose up -d postgres redis api
 ```
 
 ### Monitor and Debug
@@ -196,6 +253,9 @@ docker compose logs -f postgres
 
 # Follow logs with timestamps
 docker compose logs -f -t api
+
+# Monitor frontend build process
+docker compose logs -f frontend
 ```
 
 ### Container Management
@@ -210,7 +270,7 @@ docker compose stop api
 docker compose restart
 
 # Restart specific service
-docker compose restart api
+docker compose restart frontend
 
 # Remove containers (keeps volumes)
 docker compose down
@@ -233,6 +293,10 @@ docker compose exec postgres psql -U postgres -d ip_management
 # Run one-off commands
 docker compose exec api python scripts/init-sample-data.py
 docker compose exec api alembic upgrade head
+
+# Frontend development commands
+docker compose exec frontend npm test
+docker compose exec frontend npm run lint
 ```
 
 ## 📊 Service Details
@@ -258,6 +322,9 @@ curl http://localhost:3000/        # Frontend
 
 # Database connection test
 docker compose exec postgres pg_isready -U postgres
+
+# Frontend API connectivity test
+curl http://localhost:3000/api/health
 ```
 
 ## 💾 Data Persistence
@@ -310,6 +377,22 @@ docker compose build --no-cache
 docker compose up -d
 ```
 
+### Frontend Development
+```bash
+# Run frontend tests
+docker compose exec frontend npm test
+
+# Run frontend linting
+docker compose exec frontend npm run lint
+docker compose exec frontend npm run lint:fix
+
+# Check TypeScript types
+docker compose exec frontend npm run type-check
+
+# Build frontend for production
+docker compose exec frontend npm run build
+```
+
 ### Database Migrations
 ```bash
 # Create new migration
@@ -327,8 +410,17 @@ docker compose exec api alembic current
 # Backend tests
 docker compose exec api pytest tests/ -v
 
-# With coverage
+# Backend tests with coverage
 docker compose exec api pytest tests/ --cov=src --cov-report=html
+
+# Frontend unit tests
+docker compose exec frontend npm test
+
+# Frontend property-based tests
+docker compose exec frontend npm run test:property
+
+# Frontend end-to-end tests
+docker compose exec frontend npm run test:e2e
 ```
 
 ## 🚨 Troubleshooting
@@ -350,14 +442,11 @@ FRONTEND_PORT=3001
 ```bash
 # Check container logs
 docker compose logs api
+docker compose logs frontend
 
 # Check system resources
 docker system df
 docker system prune -f
-
-# If UV package manager issues occur, use simple Dockerfile
-# Edit docker-compose.yml and change:
-# dockerfile: Dockerfile.backend.simple
 
 # Rebuild from scratch
 docker compose down -v
@@ -365,18 +454,31 @@ docker compose build --no-cache
 docker compose up -d
 ```
 
-#### UV Package Manager Issues
+#### Frontend Build Issues
 ```bash
-# If you encounter UV-related build errors, switch to standard pip
-# Edit docker-compose.yml:
-sed -i 's/Dockerfile.backend/Dockerfile.backend.simple/g' docker-compose.yml
+# Check frontend build logs
+docker compose logs frontend
 
-# Or manually edit docker-compose.yml and change the dockerfile line to:
-# dockerfile: Dockerfile.backend.simple
+# Rebuild frontend with no cache
+docker compose build --no-cache frontend
 
-# Then rebuild
-docker compose build --no-cache api
-docker compose up -d
+# Check Node.js version in container
+docker compose exec frontend node --version
+
+# Clear npm cache
+docker compose exec frontend npm cache clean --force
+```
+
+#### Frontend API Connection Issues
+```bash
+# Check API is accessible from frontend container
+docker compose exec frontend curl http://api:8000/health
+
+# Verify environment variables
+docker compose exec frontend env | grep VITE_
+
+# Check network connectivity
+docker compose exec frontend ping api
 ```
 
 #### Database Connection Issues
@@ -396,18 +498,6 @@ docker volume rm ip-management_postgres_data
 docker compose up -d postgres
 ```
 
-#### Frontend Not Loading
-```bash
-# Check frontend logs
-docker compose logs frontend
-
-# Verify API connection
-curl http://localhost:8000/health
-
-# Check environment variables
-docker compose exec frontend env | grep REACT_APP
-```
-
 ### Performance Issues
 ```bash
 # Check resource usage
@@ -419,6 +509,9 @@ deploy:
     limits:
       memory: 512M
       cpus: '0.5'
+
+# Monitor frontend performance
+docker compose exec frontend npm run build -- --analyze
 ```
 
 ### Clean Up
@@ -439,6 +532,7 @@ docker system prune -a -f --volumes
 - [ ] Configure firewall rules
 - [ ] Set up log rotation
 - [ ] Enable container resource limits
+- [ ] Configure frontend environment for production API URLs
 
 ### Production Profile
 ```bash
@@ -452,7 +546,16 @@ curl http://localhost:80/health
 ### SSL Configuration
 1. Place SSL certificates in `nginx/ssl/`
 2. Uncomment HTTPS server block in `nginx/nginx.conf`
-3. Update `CORS_ORIGINS` in `.env`
+3. Update `CORS_ORIGINS` and `FRONTEND_API_URL` in `.env`
+
+### Frontend Production Build
+```bash
+# Build optimized frontend for production
+docker compose build --build-arg NODE_ENV=production frontend
+
+# Or set production environment variables
+VITE_API_URL=https://your-api-domain.com/api/v1 docker compose build frontend
+```
 
 ## 📞 Support
 
@@ -461,11 +564,12 @@ curl http://localhost:80/health
 2. Verify configuration: `docker compose config`
 3. Check system resources: `docker system df`
 4. Review environment variables: `docker compose exec api env`
+5. Test frontend API connectivity: `docker compose exec frontend curl http://api:8000/health`
 
 ### Useful Commands Reference
 ```bash
 # Quick status check
-docker compose ps && docker compose logs --tail=10 api
+docker compose ps && docker compose logs --tail=10 api frontend
 
 # Full system restart
 docker compose down && docker compose up -d
@@ -475,6 +579,10 @@ docker compose down -v && docker system prune -f && docker compose up -d
 
 # Performance monitoring
 docker stats --format "table {{.Container}}\t{{.CPUPerc}}\t{{.MemUsage}}"
+
+# Frontend debugging
+docker compose exec frontend npm run type-check
+docker compose exec frontend npm run lint
 ```
 
 ---
@@ -483,9 +591,17 @@ docker stats --format "table {{.Container}}\t{{.CPUPerc}}\t{{.MemUsage}}"
 
 If everything is working correctly, you should see:
 
-✅ **Frontend**: http://localhost:3000 - IP Management web interface  
+✅ **Frontend**: http://localhost:3000 - Professional React IP Management interface  
 ✅ **API Docs**: http://localhost:8000/api/docs - Interactive API documentation  
 ✅ **Health Check**: http://localhost:8000/health - Returns "healthy"  
+
+### Expected Frontend Features
+- **Dashboard** with system overview and health monitoring
+- **Domain Management** for business domains (MFG, LOG, FCM, ENG)
+- **VLAN Configuration** with automatic IP range calculation
+- **IP Address Management** with reserved IP protection
+- **Real-time Validation** and error handling
+- **Responsive Design** optimized for industrial environments
 
 The system is now ready for managing IT/OT network infrastructure at industrial facilities like the Bosch Rexroth Bursa Factory.
 

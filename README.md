@@ -6,7 +6,10 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)](https://fastapi.tiangolo.com/)
+[![React 18](https://img.shields.io/badge/React-18+-blue.svg)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-blue.svg)](https://www.postgresql.org/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-blue.svg)](https://www.docker.com/)
 
 ## 🏭 Overview
 
@@ -15,9 +18,10 @@ A comprehensive IP management system designed specifically for **Bosch Rexroth B
 ### 🎯 Core Features
 
 - **Hierarchical Network Management**: Domain → Value Stream → Zone → VLAN → IP structure
-- **Automatic IP Allocation**: Smart IP generation with reserved management IP protection
+- **Automatic IP Allocation**: Smart IP generation with reserved management IP protection (first 6 + last IP)
 - **Security Zone Compliance**: Bosch Rexroth security standards (SL3, MFZ_SL4, LOG_SL4, etc.)
-- **Industrial-Grade UI**: Optimized for IT/OT network operations
+- **Industrial-Grade UI**: React/TypeScript frontend optimized for IT/OT network operations
+- **Real-time Validation**: Client-side validation with server-side consistency
 - **Audit & Compliance**: Complete audit trail and security compliance reporting
 - **Multi-Plant Scalability**: Designed for expansion to additional Bosch facilities
 
@@ -28,10 +32,20 @@ A comprehensive IP management system designed specifically for **Bosch Rexroth B
 │   Frontend      │    │   Backend API   │    │   Database      │
 │   React + TS    │◄──►│   FastAPI       │◄──►│   PostgreSQL    │
 │   Tailwind CSS  │    │   SQLAlchemy    │    │   + Redis       │
+│   Zustand       │    │   Pydantic      │    │   + Nginx       │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
 ### 🔧 Technology Stack
+
+**Frontend:**
+- **React 18** - Modern UI framework with hooks
+- **TypeScript 5.0+** - Type-safe development
+- **Tailwind CSS** - Industrial-grade utility-first styling
+- **Zustand** - Lightweight state management
+- **React Hook Form + Zod** - Form handling and validation
+- **Axios** - HTTP client with retry logic and caching
+- **Vite** - Fast development and optimized builds
 
 **Backend:**
 - **Python 3.11+** - Core development language
@@ -41,67 +55,61 @@ A comprehensive IP management system designed specifically for **Bosch Rexroth B
 - **Alembic** - Database migration management
 - **Pydantic** - Data validation and serialization
 
-**Frontend:**
-- **React 18** - Modern UI framework
-- **TypeScript** - Type-safe development
-- **Tailwind CSS** - Utility-first styling
-- **React Query** - Server state management
-- **React Hook Form** - Form handling and validation
-
 **Infrastructure:**
 - **Docker & Docker Compose** - Containerized deployment
 - **Nginx** - Reverse proxy and load balancing
+- **Redis** - Caching and session management
 - **UV** - Fast Python package management
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-- Python 3.11+
-- Node.js 18+
-- PostgreSQL 15+
-- Docker & Docker Compose (optional)
+- **Docker & Docker Compose** (Recommended - no local setup required)
+- OR: Python 3.11+, Node.js 18+, PostgreSQL 15+
 
-### 1. Clone Repository
+### Option 1: Docker Deployment (Recommended)
 
 ```bash
+# Clone repository
 git clone https://github.com/your-org/ip-management.git
 cd ip-management
-```
 
-### 2. Backend Setup
-
-```bash
-# Install UV package manager
-pip install uv
-
-# Install dependencies
-uv sync
-
-# Set up environment variables
+# Copy environment configuration
 cp .env.example .env
-# Edit .env with your database credentials
+# Edit .env with your configuration
 
-# Initialize database
-python scripts/run_dev.py
-```
-
-### 3. Frontend Setup
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-### 4. Docker Deployment (Alternative)
-
-```bash
 # Start all services
 docker-compose up -d
 
-# Initialize sample data
+# Initialize sample data (optional)
 docker-compose exec api python scripts/init-sample-data.py
+
+# Access the application
+# Frontend: http://localhost:3000
+# API Docs: http://localhost:8000/api/docs
+```
+
+### Option 2: Local Development
+
+```bash
+# Backend setup
+pip install uv
+uv sync
+cp .env.example .env
+# Edit .env with your database credentials
+python scripts/run_dev.py
+
+# Frontend setup (in new terminal)
+cd frontend
+npm install
+cp .env.example .env
+# Edit .env with your API URL
+npm run dev
+
+# Access the application
+# Frontend: http://localhost:5173
+# Backend: http://localhost:8000
 ```
 
 ## 📊 Network Structure
@@ -134,6 +142,32 @@ The system manages network infrastructure using a hierarchical approach:
 - **LRSZ_SL4**: Local Restricted Zone (Nexeed MES, SQL, Docker)
 - **RSZ_SL4**: Restricted Zone
 
+### 🔒 Reserved IP Protection
+
+The system automatically reserves network management IPs:
+- **First 6 IPs**: Reserved for network infrastructure (routers, switches, etc.)
+- **Last IP**: Reserved for broadcast/management purposes
+- **Visual Indicators**: Frontend clearly marks reserved IPs as non-assignable
+- **Validation**: Both client and server prevent allocation of reserved IPs
+
+## 🖥️ User Interface
+
+### Industrial-Grade Frontend Features
+
+- **Operator-Focused Design**: Optimized for network administrators and technicians
+- **Responsive Layout**: Works on desktop and tablet devices in production environments
+- **Real-time Validation**: Immediate feedback on network configuration errors
+- **Accessibility**: WCAG AAA compliant with keyboard navigation and screen reader support
+- **Performance**: Optimized for large datasets with pagination and virtual scrolling
+
+### Key Interface Sections
+
+1. **Dashboard**: System overview, health monitoring, and quick actions
+2. **Domain Management**: Create and manage business domains (MFG, LOG, FCM, ENG)
+3. **VLAN Management**: Configure VLANs with automatic IP range calculation
+4. **IP Management**: Assign IP addresses to devices with MAC address tracking
+5. **Reports**: Network hierarchy visualization and compliance reporting
+
 ## 🔧 Development
 
 ### Running Tests
@@ -144,7 +178,10 @@ uv run pytest tests/ -v --cov=src
 
 # Frontend tests
 cd frontend
-npm test
+npm test                    # Unit tests
+npm run test:coverage      # Coverage report
+npm run test:property      # Property-based tests
+npm run test:e2e          # End-to-end tests
 ```
 
 ### Code Quality
@@ -159,6 +196,7 @@ uv run mypy src/
 cd frontend
 npm run type-check
 npm run lint
+npm run lint:fix
 ```
 
 ### Database Migrations
@@ -185,15 +223,28 @@ Once running, access the interactive API documentation:
 ### Key Endpoints
 
 ```
+# Domain Management
 POST   /api/v1/domains              # Create domain
 GET    /api/v1/domains              # List domains
-POST   /api/v1/value-streams        # Create value stream
-POST   /api/v1/zones                # Create zone
+PUT    /api/v1/domains/{id}         # Update domain
+DELETE /api/v1/domains/{id}         # Delete domain
+
+# VLAN Management
 POST   /api/v1/vlans                # Create VLAN with auto IP calculation
+GET    /api/v1/vlans                # List VLANs
+POST   /api/v1/vlans/validate       # Validate VLAN configuration
 POST   /api/v1/vlans/calculate      # Preview VLAN parameters
+
+# IP Management
 POST   /api/v1/ip-assignments       # Assign IP to device
+GET    /api/v1/ip-assignments       # List IP assignments
+GET    /api/v1/vlans/{id}/available-ips  # Get available IPs
+GET    /api/v1/vlans/{id}/reserved-ips   # Get reserved IPs
+
+# Hierarchy & Reports
 GET    /api/v1/reports/hierarchy    # Network hierarchy report
 GET    /api/v1/reports/security     # Security compliance report
+GET    /api/v1/health               # System health check
 ```
 
 ## 🔒 Security Features
@@ -203,6 +254,8 @@ GET    /api/v1/reports/security     # Security compliance report
 - **Audit Logging**: Complete audit trail for all network changes
 - **Security Zone Enforcement**: Strict security type validation
 - **Network Boundary Respect**: IT/OT network segmentation compliance
+- **CSRF Protection**: Cross-site request forgery protection
+- **Content Security Policy**: Strict CSP headers in production
 
 ## 📈 Performance
 
@@ -210,42 +263,55 @@ GET    /api/v1/reports/security     # Security compliance report
 - **Database Optimization**: Indexed queries for large device inventories
 - **Connection Pooling**: Optimized database connection management
 - **Caching Strategy**: Redis caching for frequently accessed data
+- **Frontend Optimization**: Code splitting, lazy loading, and virtual scrolling
 
 ## 🚀 Deployment
 
-### Production Environment
+### Production Environment Variables
 
 ```bash
-# Build and deploy with Docker
-docker-compose -f docker-compose.prod.yml up -d
-
-# Or deploy to Kubernetes
-kubectl apply -f k8s/
-```
-
-### Environment Variables
-
-```bash
-# Database
+# Database Configuration
 DATABASE_URL=postgresql://user:pass@localhost:5432/ip_management
+REDIS_URL=redis://localhost:6379/0
 
-# Security
-SECRET_KEY=your-secret-key-here
+# Security Configuration
+SECRET_KEY=your-secret-key-change-in-production-32-chars
 ALLOWED_HOSTS=localhost,*.bosch.com,*.rexroth.com
+CORS_ORIGINS=https://your-frontend-domain.com
 
-# Application
+# Application Configuration
 PLANT_CODE=BURSA
 ORGANIZATION="Bosch Rexroth"
 LOG_LEVEL=INFO
+
+# Frontend Configuration
+VITE_API_URL=https://your-api-domain.com/api/v1
+VITE_PLANT_CODE=BURSA
+VITE_ORGANIZATION="Bosch Rexroth"
+```
+
+### Docker Production Deployment
+
+```bash
+# Build and deploy with Docker Compose
+docker-compose -f docker-compose.yml up -d
+
+# Or build individual services
+docker build -f Dockerfile.backend -t ip-management-api .
+docker build -f frontend/Dockerfile.frontend -t ip-management-frontend ./frontend
+
+# Scale services as needed
+docker-compose up -d --scale api=3 --scale frontend=2
 ```
 
 ## 📚 Documentation
 
-- [API Documentation](docs/api.md)
-- [Database Schema](docs/database.md)
-- [Security Guidelines](docs/security.md)
-- [Deployment Guide](docs/deployment.md)
-- [User Manual](docs/user-manual.md)
+- [Frontend Documentation](frontend/README.md) - Detailed frontend setup and development guide
+- [API Documentation](docs/api.md) - Complete API reference
+- [Database Schema](docs/database.md) - Database design and relationships
+- [Security Guidelines](docs/security.md) - Security implementation details
+- [Deployment Guide](docs/deployment.md) - Production deployment instructions
+- [User Manual](docs/user-manual.md) - End-user operation guide
 
 ## 🤝 Contributing
 
@@ -259,9 +325,10 @@ LOG_LEVEL=INFO
 
 - Follow PEP 8 for Python code
 - Use TypeScript for all frontend code
-- Write tests for new features
+- Write tests for new features (unit, property-based, and E2E)
 - Update documentation for API changes
 - Ensure all tests pass before submitting PR
+- Follow conventional commit messages
 
 ## 📄 License
 

@@ -5,7 +5,6 @@
 
 import '@testing-library/jest-dom';
 import { cleanup } from '@testing-library/react';
-import { afterEach, beforeAll, afterAll } from '@jest/globals';
 
 // Cleanup after each test
 afterEach(() => {

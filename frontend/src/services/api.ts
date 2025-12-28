@@ -50,11 +50,11 @@ class APIClient {
           
           if (cached && Date.now() - cached.timestamp < config.cacheDuration) {
             // Return cached response (this is a simplified approach)
-            config.metadata = { cached: true, data: cached.data };
+            (config as any).metadata = { cached: true, data: cached.data };
           }
         }
 
-        if (config.enableDebug) {
+        if ((config as any)?.enableDebug) {
           console.log(`[API] ${config.method?.toUpperCase()} ${config.url}`, config.data);
         }
 
@@ -75,7 +75,7 @@ class APIClient {
           });
         }
 
-        if (config.enableDebug) {
+        if (config?.enableDebug) {
           console.log(`[API] Response:`, response.data);
         }
 
