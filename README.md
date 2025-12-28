@@ -60,9 +60,9 @@ graph TD
     Z --> V[VLAN]
     V --> IP[IP Address]
     
-    D1[MFG] --> VS1[Production Line A]
-    D2[LOG] --> VS2[Warehouse Ops]
-    D3[FCM] --> VS3[Quality Control]
+    D1[MFG] --> VS1[MFG Value Streams]
+    D2[LOG] --> VS2[Logistics Value Stream]
+    D3[FCM] --> VS3[Facility Systems]
     D4[ENG] --> VS4[Engineering Test Benches]
     
     VS1 --> Z1[SL3 Zone]
