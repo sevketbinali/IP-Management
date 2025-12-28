@@ -60,9 +60,9 @@ RUN chown -R nginx:nginx /usr/share/nginx/html && \
     chown -R nginx:nginx /var/log/nginx && \
     chown -R nginx:nginx /etc/nginx/conf.d
 
-# Create directory for PID file
-RUN mkdir -p /var/run/nginx && \
-    chown -R nginx:nginx /var/run/nginx
+# Create directory for PID file and set permissions
+RUN mkdir -p /tmp && \
+    chown -R nginx:nginx /tmp
 
 # Switch to nginx user
 USER nginx
