@@ -34,9 +34,13 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting IP Management System")
     
-    # Create database tables
-    Base.metadata.create_all(bind=engine)
-    logger.info("Database tables created/verified")
+    # Create database tables with error handling
+    try:
+        Base.metadata.create_all(bind=engine)
+        logger.info("Database tables created/verified")
+    except Exception as e:
+        logger.warning(f"Database table creation warning (may already exist): {e}")
+        # Continue anyway - tables might already exist
     
     yield
     

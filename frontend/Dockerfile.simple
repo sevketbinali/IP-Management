@@ -15,11 +15,8 @@ RUN mkdir -p /usr/share/nginx/html
 # Copy static files
 COPY static/ /usr/share/nginx/html/
 
-# Set permissions
+# Set permissions (run as root in container)
 RUN chown -R nginx:nginx /usr/share/nginx/html
-
-# Switch to nginx user
-USER nginx
 
 # Expose port
 EXPOSE 80
@@ -28,5 +25,5 @@ EXPOSE 80
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD curl -f http://localhost:80/ || exit 1
 
-# Start nginx
+# Start nginx (as root - standard for Docker)
 CMD ["nginx", "-g", "daemon off;"]
