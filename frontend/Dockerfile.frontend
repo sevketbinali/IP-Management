@@ -13,7 +13,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci --only=production --silent
+RUN npm ci --silent
 
 # Copy source code
 COPY . .
@@ -24,9 +24,9 @@ ARG REACT_APP_PLANT_CODE=BURSA
 ARG REACT_APP_ORGANIZATION="Bosch Rexroth"
 
 # Set environment variables for build
-ENV REACT_APP_API_URL=${REACT_APP_API_URL}
-ENV REACT_APP_PLANT_CODE=${REACT_APP_PLANT_CODE}
-ENV REACT_APP_ORGANIZATION=${REACT_APP_ORGANIZATION}
+ENV VITE_API_URL=${REACT_APP_API_URL}
+ENV VITE_PLANT_CODE=${REACT_APP_PLANT_CODE}
+ENV VITE_ORGANIZATION=${REACT_APP_ORGANIZATION}
 ENV NODE_ENV=production
 
 # Build the application
@@ -44,14 +44,8 @@ COPY nginx.conf /etc/nginx/nginx.conf
 # Copy built application from builder stage
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copy environment configuration script
-COPY docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
-
 # Create nginx user and set permissions
-RUN addgroup -g 101 -S nginx && \
-    adduser -S -D -H -u 101 -h /var/cache/nginx -s /sbin/nologin -G nginx -g nginx nginx && \
-    chown -R nginx:nginx /usr/share/nginx/html && \
+RUN chown -R nginx:nginx /usr/share/nginx/html && \
     chown -R nginx:nginx /var/cache/nginx && \
     chown -R nginx:nginx /var/log/nginx && \
     chown -R nginx:nginx /etc/nginx/conf.d
@@ -67,5 +61,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD curl -f http://localhost:80/ || exit 1
 
 # Start nginx
-ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]

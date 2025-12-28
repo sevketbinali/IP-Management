@@ -1,8 +1,6 @@
 # Docker Compose for IP Management System
 # Complete containerized deployment - no local installations required
 
-version: '3.8'
-
 services:
   # PostgreSQL Database
   postgres:
