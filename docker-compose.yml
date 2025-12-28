@@ -63,7 +63,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: Dockerfile.backend
+      dockerfile: Dockerfile.backend.simple
       args:
         - PYTHON_VERSION=${PYTHON_VERSION:-3.11}
     container_name: ip_management_api

@@ -353,9 +353,27 @@ docker compose logs api
 docker system df
 docker system prune -f
 
+# If UV package manager issues occur, use simple Dockerfile
+# Edit docker-compose.yml and change:
+# dockerfile: Dockerfile.backend.simple
+
 # Rebuild from scratch
 docker compose down -v
 docker compose build --no-cache
+docker compose up -d
+```
+
+#### UV Package Manager Issues
+```bash
+# If you encounter UV-related build errors, switch to standard pip
+# Edit docker-compose.yml:
+sed -i 's/Dockerfile.backend/Dockerfile.backend.simple/g' docker-compose.yml
+
+# Or manually edit docker-compose.yml and change the dockerfile line to:
+# dockerfile: Dockerfile.backend.simple
+
+# Then rebuild
+docker compose build --no-cache api
 docker compose up -d
 ```
 
