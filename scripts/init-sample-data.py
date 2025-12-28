@@ -15,9 +15,9 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root / "src"))
 
 from sqlalchemy.orm import Session
-from src.ip_management.config.database import SessionLocal
-from src.ip_management.services.ip_service import IPManagementService
-from src.ip_management.models.schemas import (
+from ip_management.config.database import SessionLocal
+from ip_management.services.ip_service import IPManagementService
+from ip_management.models.schemas import (
     DomainCreate, ValueStreamCreate, ZoneCreate, VLANCreate, IPAssignmentCreate
 )
 
