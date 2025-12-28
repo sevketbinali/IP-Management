@@ -222,7 +222,7 @@ class IPManagementService:
         # Validate IP is within VLAN subnet
         try:
             ip_addr = ipaddress.IPv4Address(assignment_data.ip_address)
-            vlan_network = ipaddress.IPv4Network(f"{vlan.subnet}/{vlan.netmask}", strict=False)
+            vlan_network = ipaddress.IPv4Network(f"{vlan.subnet}{vlan.netmask}", strict=False)
             
             if ip_addr not in vlan_network:
                 raise IPAllocationError(f"IP {assignment_data.ip_address} not in VLAN subnet {vlan_network}")
@@ -272,7 +272,7 @@ class IPManagementService:
         
         # Generate available IPs
         try:
-            vlan_network = ipaddress.IPv4Network(f"{vlan.subnet}/{vlan.netmask}", strict=False)
+            vlan_network = ipaddress.IPv4Network(f"{vlan.subnet}{vlan.netmask}", strict=False)
             
             for host_ip in vlan_network.hosts():
                 if (str(host_ip) not in assigned_set and 
@@ -291,7 +291,7 @@ class IPManagementService:
         
         # Calculate total IPs
         try:
-            vlan_network = ipaddress.IPv4Network(f"{vlan.subnet}/{vlan.netmask}", strict=False)
+            vlan_network = ipaddress.IPv4Network(f"{vlan.subnet}{vlan.netmask}", strict=False)
             total_hosts = vlan_network.num_addresses - 2  # Exclude network and broadcast
             
             # Count reserved IPs
