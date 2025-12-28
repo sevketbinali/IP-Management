@@ -10,10 +10,10 @@ FROM node:${NODE_VERSION}-alpine as builder
 WORKDIR /app
 
 # Copy package files
-COPY package.json package-lock.json ./
+COPY package.json ./
 
-# Install dependencies
-RUN npm ci --only=production --silent
+# Install dependencies (this will create package-lock.json if it doesn't exist)
+RUN npm install --silent
 
 # Copy source code
 COPY . .
