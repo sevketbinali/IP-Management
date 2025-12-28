@@ -123,7 +123,16 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile.simple
+      dockerfile: Dockerfile.frontend
+      args:
+        - VITE_API_URL=${FRONTEND_API_URL:-http://localhost:8000/api/v1}
+        - VITE_PLANT_CODE=${PLANT_CODE:-BURSA}
+        - VITE_ORGANIZATION=${ORGANIZATION:-Bosch Rexroth}
+        - VITE_API_TIMEOUT=${FRONTEND_API_TIMEOUT:-30000}
+        - VITE_CACHE_DURATION=${FRONTEND_CACHE_DURATION:-300000}
+        - VITE_PAGINATION_SIZE=${FRONTEND_PAGINATION_SIZE:-50}
+        - VITE_ENABLE_DEBUG=${FRONTEND_ENABLE_DEBUG:-false}
+        - VITE_ENABLE_ANALYTICS=${FRONTEND_ENABLE_ANALYTICS:-true}
     container_name: ip_management_frontend
     ports:
       - "${FRONTEND_PORT:-3000}:80"

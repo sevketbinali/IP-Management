@@ -10,23 +10,33 @@ FROM node:${NODE_VERSION}-alpine as builder
 WORKDIR /app
 
 # Copy package files
-COPY package.json ./
+COPY package.json package-lock.json ./
 
-# Install dependencies using npm install instead of npm ci
-RUN npm install --silent
+# Install dependencies
+RUN npm ci --only=production --silent
 
 # Copy source code
 COPY . .
 
 # Build arguments for environment variables
-ARG REACT_APP_API_URL=http://localhost:8000/api/v1
-ARG REACT_APP_PLANT_CODE=BURSA
-ARG REACT_APP_ORGANIZATION="Bosch Rexroth"
+ARG VITE_API_URL=http://localhost:8000/api/v1
+ARG VITE_PLANT_CODE=BURSA
+ARG VITE_ORGANIZATION="Bosch Rexroth"
+ARG VITE_API_TIMEOUT=30000
+ARG VITE_CACHE_DURATION=300000
+ARG VITE_PAGINATION_SIZE=50
+ARG VITE_ENABLE_DEBUG=false
+ARG VITE_ENABLE_ANALYTICS=true
 
 # Set environment variables for build
-ENV VITE_API_URL=${REACT_APP_API_URL}
-ENV VITE_PLANT_CODE=${REACT_APP_PLANT_CODE}
-ENV VITE_ORGANIZATION=${REACT_APP_ORGANIZATION}
+ENV VITE_API_URL=${VITE_API_URL}
+ENV VITE_PLANT_CODE=${VITE_PLANT_CODE}
+ENV VITE_ORGANIZATION=${VITE_ORGANIZATION}
+ENV VITE_API_TIMEOUT=${VITE_API_TIMEOUT}
+ENV VITE_CACHE_DURATION=${VITE_CACHE_DURATION}
+ENV VITE_PAGINATION_SIZE=${VITE_PAGINATION_SIZE}
+ENV VITE_ENABLE_DEBUG=${VITE_ENABLE_DEBUG}
+ENV VITE_ENABLE_ANALYTICS=${VITE_ENABLE_ANALYTICS}
 ENV NODE_ENV=production
 
 # Build the application
@@ -49,6 +59,10 @@ RUN chown -R nginx:nginx /usr/share/nginx/html && \
     chown -R nginx:nginx /var/cache/nginx && \
     chown -R nginx:nginx /var/log/nginx && \
     chown -R nginx:nginx /etc/nginx/conf.d
+
+# Create directory for PID file
+RUN mkdir -p /var/run/nginx && \
+    chown -R nginx:nginx /var/run/nginx
 
 # Switch to nginx user
 USER nginx
