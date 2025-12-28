@@ -547,8 +547,283 @@ class VLANRepository(ABC):
 
 *A property is a characteristic or behavior that should hold true across all valid executions of a system—essentially, a formal statement about what the system should do. Properties serve as the bridge between human-readable specifications and machine-verifiable correctness guarantees.*
 
-Let me analyze the acceptance criteria to determine which ones can be tested as properties:
+Based on the prework analysis, the following properties capture the essential correctness requirements:
+
+### Property 1: Hierarchical Structure Integrity
+*For any* valid system entity, it must follow the exact five-tier hierarchy: Domain → Value Stream → Zone → VLAN → IP, and no entity can exist without its proper parent in the hierarchy.
+**Validates: Requirements 1.1, 1.3, 10.5**
+
+### Property 2: Navigation Consistency
+*For any* parent entity in the hierarchy, all returned child entities must actually belong to that parent and no orphaned entities should be accessible.
+**Validates: Requirements 1.2**
+
+### Property 3: Referential Integrity Protection
+*For any* parent entity with child entities, deletion attempts must be prevented, and this rule must apply consistently across all hierarchy levels.
+**Validates: Requirements 1.4, 5.3, 6.4**
+
+### Property 4: Domain Value Constraints
+*For any* domain creation or validation operation, only the exact values MFG, LOG, FCM, ENG must be accepted, and all other values must be rejected.
+**Validates: Requirements 1.5, 5.1**
+
+### Property 5: VLAN Creation Validation
+*For any* VLAN creation request, all required fields (VLAN ID, subnet, subnet mask, default gateway, network start, network end, zone name, zone manager) must be present and valid.
+**Validates: Requirements 2.1**
+
+### Property 6: VLAN ID Domain Uniqueness
+*For any* VLAN within a domain, the VLAN ID must be unique within that domain scope, and duplicate VLAN IDs within the same domain must be rejected.
+**Validates: Requirements 2.2**
+
+### Property 7: Subnet Mathematical Correctness
+*For any* subnet configuration, the subnet, mask, gateway, and boundary calculations must be mathematically correct according to CIDR standards.
+**Validates: Requirements 2.3, 2.5**
+
+### Property 8: Security Zone Subnet Isolation
+*For any* two VLANs within the same security zone, their subnets must not overlap, and overlapping subnet assignments must be prevented.
+**Validates: Requirements 2.6**
+
+### Property 9: Reserved IP Protection
+*For any* IP allocation (automatic or manual), the first 6 IP addresses and the last IP address in any subnet must never be allocated, and allocation attempts for these addresses must be rejected.
+**Validates: Requirements 3.1, 3.2, 3.5, 8.2**
+
+### Property 10: IP Allocation Range Compliance
+*For any* IP allocation, the allocated IP address must fall within the available range between reserved blocks and within the VLAN subnet boundaries.
+**Validates: Requirements 3.3, 4.3**
+
+### Property 11: IP Pool Exhaustion Handling
+*For any* VLAN where all available IPs are allocated, further allocation attempts must be rejected with appropriate error notification.
+**Validates: Requirements 3.4**
+
+### Property 12: MAC Address Format and Uniqueness
+*For any* MAC address in the system, it must follow valid MAC address format and be globally unique across all IP allocations.
+**Validates: Requirements 4.2, 4.5**
+
+### Property 13: IP Address VLAN Uniqueness
+*For any* IP address within a VLAN, it must be unique within that VLAN, and duplicate IP assignments within the same VLAN must be prevented.
+**Validates: Requirements 4.4**
+
+### Property 14: Data Persistence Consistency
+*For any* save operation, the data must be successfully persisted to the database and remain accessible for subsequent operations.
+**Validates: Requirements 4.6, 10.1**
+
+### Property 15: Security Level Constraints
+*For any* zone creation or validation, only the predefined security levels (SL3, MFZ_SL4, LOG_SL4, FMZ_SL4, ENG_SL4, LRSZ_SL4, RSZ_SL4) must be accepted.
+**Validates: Requirements 7.1, 7.2**
+
+### Property 16: Comprehensive Audit Logging
+*For any* data modification operation (IP allocation, VLAN creation, zone changes, authentication events), a complete audit log entry must be created with timestamp and user attribution.
+**Validates: Requirements 3.6, 7.6, 8.5, 10.6, 11.5**
+
+### Property 17: Transaction Atomicity
+*For any* multi-table database operation, either all changes must be committed successfully or all changes must be rolled back, maintaining database consistency.
+**Validates: Requirements 10.2**
+
+### Property 18: Auto-Generation Calculation Accuracy
+*For any* auto-generation request with device count requirements, the calculated VLAN configuration must accommodate the specified device count plus reserved IP ranges with appropriate growth factor.
+**Validates: Requirements 9.1, 9.3, 9.4**
+
+### Property 19: Configuration Preview Consistency
+*For any* auto-generated configuration, the preview must exactly match what would be applied when the configuration is actually created.
+**Validates: Requirements 9.5**
+
+### Property 20: Authentication Integration
+*For any* user authentication attempt, the system must properly integrate with Bosch IAM and enforce role-based access control according to user permissions.
+**Validates: Requirements 11.1, 11.2**
+
+### Property 21: Multi-Tenant Data Isolation
+*For any* multi-plant deployment, tenant data must be completely isolated, and no tenant should be able to access another tenant's data.
+**Validates: Requirements 12.1, 12.3**
 
 <function_calls>
 <invoke name="prework">
 <parameter name="featureName">ip-vlan-management
+
+## Error Handling
+
+### Exception Hierarchy
+
+```python
+class IPManagementException(Exception):
+    """Base exception for IP Management system"""
+    pass
+
+class ValidationException(IPManagementException):
+    """Base class for validation errors"""
+    pass
+
+class BusinessRuleException(IPManagementException):
+    """Base class for business rule violations"""
+    pass
+
+# Network-specific exceptions
+class InvalidSubnetException(ValidationException):
+    def __init__(self, subnet: str, reason: str):
+        super().__init__(f"Invalid subnet '{subnet}': {reason}")
+
+class SubnetOverlapException(BusinessRuleException):
+    def __init__(self, subnet: IPv4Network, overlapping_vlans: List[VLAN]):
+        vlan_ids = [str(v.vlan_id) for v in overlapping_vlans]
+        super().__init__(f"Subnet {subnet} overlaps with VLANs: {', '.join(vlan_ids)}")
+
+class ReservedIPException(BusinessRuleException):
+    def __init__(self, ip_address: IPv4Address):
+        super().__init__(f"IP address {ip_address} is in reserved range")
+
+class NoAvailableIPsException(BusinessRuleException):
+    def __init__(self, vlan_id: UUID):
+        super().__init__(f"No available IP addresses in VLAN {vlan_id}")
+
+# Referential integrity exceptions
+class ReferentialIntegrityException(BusinessRuleException):
+    pass
+
+class VLANNotFoundException(IPManagementException):
+    def __init__(self, vlan_id: UUID):
+        super().__init__(f"VLAN not found: {vlan_id}")
+
+# Duplicate resource exceptions
+class DuplicateVLANIDException(BusinessRuleException):
+    def __init__(self, vlan_id: int, domain_id: UUID):
+        super().__init__(f"VLAN ID {vlan_id} already exists in domain {domain_id}")
+
+class DuplicateIPException(BusinessRuleException):
+    def __init__(self, ip_address: IPv4Address, vlan_id: UUID):
+        super().__init__(f"IP address {ip_address} already allocated in VLAN {vlan_id}")
+
+class DuplicateMACAddressException(BusinessRuleException):
+    def __init__(self, mac_address: str):
+        super().__init__(f"MAC address {mac_address} already registered")
+```
+
+### Error Handling Strategy
+
+1. **Input Validation**: All user inputs are validated at the service layer before processing
+2. **Business Rule Enforcement**: Domain services enforce business rules and throw appropriate exceptions
+3. **Transaction Rollback**: Database transactions are rolled back on any error to maintain consistency
+4. **Audit Logging**: All errors are logged with context for troubleshooting
+5. **User-Friendly Messages**: API layer translates technical exceptions to user-friendly error messages
+6. **Graceful Degradation**: System continues operating even when non-critical components fail
+
+### Error Response Format
+
+```python
+@dataclass
+class ErrorResponse:
+    error_code: str
+    message: str
+    details: Optional[Dict[str, Any]] = None
+    timestamp: datetime = field(default_factory=datetime.utcnow)
+    request_id: Optional[str] = None
+
+# Example error responses
+{
+    "error_code": "SUBNET_OVERLAP",
+    "message": "The specified subnet overlaps with existing VLANs",
+    "details": {
+        "requested_subnet": "192.168.1.0/24",
+        "conflicting_vlans": [100, 101]
+    },
+    "timestamp": "2024-01-15T10:30:00Z",
+    "request_id": "req_123456"
+}
+```
+
+## Testing Strategy
+
+### Dual Testing Approach
+
+The system employs both unit testing and property-based testing to ensure comprehensive coverage:
+
+- **Unit tests**: Verify specific examples, edge cases, and error conditions
+- **Property tests**: Verify universal properties across all inputs
+- Both approaches are complementary and necessary for comprehensive coverage
+
+### Property-Based Testing Configuration
+
+- **Testing Library**: Hypothesis (Python property-based testing library)
+- **Test Iterations**: Minimum 100 iterations per property test
+- **Test Tagging**: Each property test references its design document property
+- **Tag Format**: `# Feature: ip-vlan-management, Property {number}: {property_text}`
+
+### Unit Testing Strategy
+
+Unit tests focus on:
+- **Specific Examples**: Concrete scenarios that demonstrate correct behavior
+- **Edge Cases**: Boundary conditions, empty inputs, maximum values
+- **Error Conditions**: Invalid inputs, constraint violations, system failures
+- **Integration Points**: Component interactions and data flow validation
+
+### Property Testing Strategy
+
+Property tests focus on:
+- **Universal Properties**: Rules that must hold for all valid inputs
+- **Invariant Preservation**: Properties that remain constant across operations
+- **Round-trip Properties**: Operations that should be reversible
+- **Metamorphic Properties**: Relationships between different inputs/outputs
+
+### Test Organization
+
+```
+tests/
+├── unit/
+│   ├── test_domain_models.py
+│   ├── test_ip_management_service.py
+│   ├── test_vlan_management_service.py
+│   └── test_hierarchy_service.py
+├── property/
+│   ├── test_hierarchy_properties.py
+│   ├── test_ip_allocation_properties.py
+│   ├── test_vlan_properties.py
+│   └── test_security_properties.py
+├── integration/
+│   ├── test_database_integration.py
+│   ├── test_api_endpoints.py
+│   └── test_authentication_integration.py
+└── fixtures/
+    ├── domain_fixtures.py
+    ├── network_fixtures.py
+    └── test_data.py
+```
+
+### Example Property Test Implementation
+
+```python
+from hypothesis import given, strategies as st
+import pytest
+
+class TestHierarchyProperties:
+    
+    @given(st.text(min_size=1, max_size=100))
+    def test_property_1_hierarchical_structure_integrity(self, entity_name):
+        """
+        Feature: ip-vlan-management, Property 1: Hierarchical Structure Integrity
+        For any valid system entity, it must follow the exact five-tier hierarchy
+        """
+        # Test implementation here
+        pass
+    
+    @given(st.uuids(), st.lists(st.uuids(), min_size=0, max_size=10))
+    def test_property_2_navigation_consistency(self, parent_id, child_ids):
+        """
+        Feature: ip-vlan-management, Property 2: Navigation Consistency
+        For any parent entity, all returned children must belong to that parent
+        """
+        # Test implementation here
+        pass
+```
+
+### Coverage Requirements
+
+- **Minimum Coverage**: 80% code coverage for core business logic
+- **Property Coverage**: Each correctness property must have corresponding property test
+- **Integration Coverage**: All major component interactions must be tested
+- **Error Path Coverage**: All exception paths must be tested
+
+### Continuous Integration
+
+- **Automated Testing**: All tests run on every commit
+- **Performance Benchmarks**: Property tests include performance assertions
+- **Security Testing**: Authentication and authorization paths are tested
+- **Database Testing**: Tests run against real database instances
+- **Multi-Environment Testing**: Tests run against different Python versions and database configurations
+
+The testing strategy ensures that the IP Management & VLAN Segmentation System maintains high reliability and correctness standards while supporting rapid development and deployment cycles.
