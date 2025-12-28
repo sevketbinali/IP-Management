@@ -1,38 +1,48 @@
 # Docker Compose for IP Management System
-# Production-ready configuration for Bosch Rexroth IT/OT environments
+# Complete containerized deployment - no local installations required
 
 version: '3.8'
 
 services:
   # PostgreSQL Database
   postgres:
-    image: postgres:15-alpine
+    image: postgres:15.5-alpine
     container_name: ip_management_db
     environment:
-      POSTGRES_DB: ip_management
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-secure_password_change_in_production}
+      POSTGRES_DB: ${POSTGRES_DB:-ip_management}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure_password_change_in_production}
       POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     networks:
       - ip_management_network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d ip_management"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-ip_management}"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
 
-  # Redis for Caching (Optional)
+  # Redis for Caching
   redis:
-    image: redis:7-alpine
+    image: redis:7.2-alpine
     container_name: ip_management_cache
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
     networks:
       - ip_management_network
     restart: unless-stopped
@@ -41,22 +51,53 @@ services:
       interval: 10s
       timeout: 3s
       retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
 
   # Backend API
   api:
     build:
       context: .
-      dockerfile: Dockerfile
-      target: production
+      dockerfile: Dockerfile.backend
+      args:
+        - PYTHON_VERSION=${PYTHON_VERSION:-3.11}
     container_name: ip_management_api
     environment:
-      DATABASE_URL: postgresql://postgres:${DB_PASSWORD:-secure_password_change_in_production}@postgres:5432/ip_management
+      # Database Configuration
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-secure_password_change_in_production}@postgres:5432/${POSTGRES_DB:-ip_management}
       REDIS_URL: redis://redis:6379/0
-      LOG_LEVEL: INFO
-      PLANT_CODE: BURSA
-      ORGANIZATION: "Bosch Rexroth"
+      
+      # Application Settings
+      SECRET_KEY: ${SECRET_KEY:-your-secret-key-change-in-production-32-chars}
+      DEBUG: ${DEBUG:-false}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      
+      # Security Settings
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1,*.bosch.com,*.rexroth.com}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:8080}
+      
+      # Bosch Rexroth Specific
+      PLANT_CODE: ${PLANT_CODE:-BURSA}
+      ORGANIZATION: ${ORGANIZATION:-Bosch Rexroth}
+      SECURITY_COMPLIANCE_CHECK_DAYS: ${SECURITY_COMPLIANCE_CHECK_DAYS:-30}
+      
+      # Performance Settings
+      DB_POOL_SIZE: ${DB_POOL_SIZE:-10}
+      DB_MAX_OVERFLOW: ${DB_MAX_OVERFLOW:-20}
+      DB_POOL_RECYCLE: ${DB_POOL_RECYCLE:-3600}
+      
+      # Network Configuration
+      DEFAULT_RESERVED_START_IPS: ${DEFAULT_RESERVED_START_IPS:-6}
+      DEFAULT_RESERVED_END_IPS: ${DEFAULT_RESERVED_END_IPS:-1}
+      MAX_VLAN_ID: ${MAX_VLAN_ID:-4094}
+      MIN_VLAN_ID: ${MIN_VLAN_ID:-1}
     ports:
-      - "8000:8000"
+      - "${API_PORT:-8000}:8000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -70,45 +111,89 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 60s
     volumes:
-      - ./logs:/app/logs
+      - api_logs:/app/logs
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
 
-  # Frontend (Production Build)
+  # Frontend
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
-      target: production
+      dockerfile: Dockerfile.frontend
+      args:
+        - NODE_VERSION=${NODE_VERSION:-18}
+        - REACT_APP_API_URL=${REACT_APP_API_URL:-http://localhost:8000/api/v1}
+        - REACT_APP_PLANT_CODE=${PLANT_CODE:-BURSA}
+        - REACT_APP_ORGANIZATION=${ORGANIZATION:-Bosch Rexroth}
     container_name: ip_management_frontend
     ports:
-      - "3000:80"
+      - "${FRONTEND_PORT:-3000}:80"
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     networks:
       - ip_management_network
     restart: unless-stopped
-    environment:
-      REACT_APP_API_URL: http://localhost:8000/api/v1
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
 
-  # Nginx Reverse Proxy
+  # Nginx Reverse Proxy (Optional - for production)
   nginx:
-    image: nginx:alpine
+    image: nginx:1.25-alpine
     container_name: ip_management_proxy
     ports:
-      - "80:80"
-      - "443:443"
+      - "${NGINX_HTTP_PORT:-80}:80"
+      - "${NGINX_HTTPS_PORT:-443}:443"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./nginx/ssl:/etc/nginx/ssl
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - nginx_logs:/var/log/nginx
     depends_on:
-      - api
-      - frontend
+      api:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
     networks:
       - ip_management_network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    profiles:
+      - production
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
 
 volumes:
   postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  api_logs:
+    driver: local
+  nginx_logs:
     driver: local
 
 networks:
