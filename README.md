@@ -63,7 +63,7 @@ graph TD
     D1[MFG] --> VS1[Production Line A]
     D2[LOG] --> VS2[Warehouse Ops]
     D3[FCM] --> VS3[Quality Control]
-    D4[ENG] --> VS4[R&D Network]
+    D4[ENG] --> VS4[Engineering Test Benches]
     
     VS1 --> Z1[SL3 Zone]
     VS1 --> Z2[MFZ_SL4 Zone]
