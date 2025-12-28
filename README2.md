@@ -88,6 +88,8 @@ docker compose up -d
 docker compose logs -f
 ```
 
+**Note**: The frontend uses a simple static HTML interface for maximum compatibility. If you prefer the React version, you can switch the Dockerfile in docker-compose.yml from `Dockerfile.simple` to `Dockerfile.frontend`.
+
 ### 4. Initialize Sample Data (Optional)
 ```bash
 # Wait for services to be healthy (30-60 seconds)

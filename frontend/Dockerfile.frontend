@@ -10,10 +10,10 @@ FROM node:${NODE_VERSION}-alpine as builder
 WORKDIR /app
 
 # Copy package files
-COPY package*.json ./
+COPY package.json ./
 
-# Install dependencies
-RUN npm ci --silent
+# Install dependencies using npm install instead of npm ci
+RUN npm install --silent
 
 # Copy source code
 COPY . .
