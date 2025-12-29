@@ -47,8 +47,16 @@ const Dashboard: React.FC = () => {
   const { domains, fetchDomains } = useDomainStore();
 
   useEffect(() => {
-    fetchDomains();
-    checkHealth();
+    const initializeDashboard = async () => {
+      try {
+        await fetchDomains();
+        await checkHealth();
+      } catch (error) {
+        console.error('Dashboard initialization error:', error);
+      }
+    };
+    
+    initializeDashboard();
   }, [fetchDomains, checkHealth]);
 
   // Mock data for demonstration - replace with real API calls

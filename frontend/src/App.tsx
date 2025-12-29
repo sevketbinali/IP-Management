@@ -1,66 +1,139 @@
-/**
- * Main Application Component
- * Industrial-grade IP Management interface for IT/OT network operations
- */
-
-import React, { useEffect } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
-import { Layout } from '@/components/Layout';
-import { Dashboard } from '@/components/Dashboard';
-import { DomainManagement } from '@/components/DomainManagement';
-import { useAppStore } from '@/stores/useAppStore';
+import { SimpleDashboard } from '@/components/SimpleDashboard';
+
+// Error Boundary Component
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean; error?: Error }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('App Error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+            <h1 className="text-2xl font-bold text-red-600 mb-4">Something went wrong</h1>
+            <p className="text-gray-700 mb-4">
+              The application encountered an error. Please refresh the page or contact support.
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+              Refresh Page
+            </button>
+            {this.state.error && (
+              <details className="mt-4">
+                <summary className="text-sm text-gray-500 cursor-pointer">Error Details</summary>
+                <pre className="text-xs text-gray-600 mt-2 overflow-auto">
+                  {this.state.error.toString()}
+                </pre>
+              </details>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
 
 const App: React.FC = () => {
-  const { checkHealth } = useAppStore();
-
-  // Initialize app on mount
-  useEffect(() => {
-    checkHealth();
-  }, [checkHealth]);
-
   return (
-    <Router>
-      <div className="min-h-screen bg-secondary-50">
-        <Layout>
+    <ErrorBoundary>
+      <Router>
+        <div className="min-h-screen bg-gray-50">
           <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/domains" element={<DomainManagement />} />
-            <Route path="/vlans" element={<div>VLAN Management - Coming Soon</div>} />
-            <Route path="/ip-management" element={<div>IP Management - Coming Soon</div>} />
-            <Route path="/reports" element={<div>Reports - Coming Soon</div>} />
-            <Route path="/settings" element={<div>Settings - Coming Soon</div>} />
+            <Route path="/" element={<SimpleDashboard />} />
+            <Route path="/domains" element={
+              <div className="p-6">
+                <h1 className="text-2xl font-bold text-gray-900 mb-4">Domain Management</h1>
+                <div className="bg-white p-6 rounded-lg shadow">
+                  <p className="text-gray-600 mb-4">Manage business domains (MFG, LOG, FCM, ENG)</p>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between p-3 border rounded">
+                      <span className="font-medium">MFG - Manufacturing</span>
+                      <span className="text-sm text-gray-500">3 Value Streams</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 border rounded">
+                      <span className="font-medium">LOG - Logistics</span>
+                      <span className="text-sm text-gray-500">1 Value Stream</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 border rounded">
+                      <span className="font-medium">FCM - Facility</span>
+                      <span className="text-sm text-gray-500">2 Value Streams</span>
+                    </div>
+                    <div className="flex items-center justify-between p-3 border rounded">
+                      <span className="font-medium">ENG - Engineering</span>
+                      <span className="text-sm text-gray-500">1 Value Stream</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            } />
+            <Route path="/vlans" element={
+              <div className="p-6">
+                <h1 className="text-2xl font-bold text-gray-900 mb-4">VLAN Management</h1>
+                <div className="bg-white p-6 rounded-lg shadow">
+                  <p className="text-gray-600 mb-4">Configure network segmentation and VLAN settings</p>
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">VLAN configuration interface coming soon...</p>
+                  </div>
+                </div>
+              </div>
+            } />
+            <Route path="/ip-management" element={
+              <div className="p-6">
+                <h1 className="text-2xl font-bold text-gray-900 mb-4">IP Address Management</h1>
+                <div className="bg-white p-6 rounded-lg shadow">
+                  <p className="text-gray-600 mb-4">Manage device IP allocations and assignments</p>
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">IP management interface coming soon...</p>
+                  </div>
+                </div>
+              </div>
+            } />
+            <Route path="/reports" element={
+              <div className="p-6">
+                <h1 className="text-2xl font-bold text-gray-900 mb-4">Reports & Analytics</h1>
+                <div className="bg-white p-6 rounded-lg shadow">
+                  <p className="text-gray-600 mb-4">Network analytics and compliance reports</p>
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">Reporting interface coming soon...</p>
+                  </div>
+                </div>
+              </div>
+            } />
+            <Route path="/settings" element={
+              <div className="p-6">
+                <h1 className="text-2xl font-bold text-gray-900 mb-4">System Settings</h1>
+                <div className="bg-white p-6 rounded-lg shadow">
+                  <p className="text-gray-600 mb-4">System configuration and preferences</p>
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">Settings interface coming soon...</p>
+                  </div>
+                </div>
+              </div>
+            } />
+            <Route path="*" element={<SimpleDashboard />} />
           </Routes>
-        </Layout>
-
-        {/* Toast notifications */}
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            duration: 4000,
-            style: {
-              background: '#fff',
-              color: '#1e293b',
-              border: '1px solid #e2e8f0',
-              borderRadius: '0.5rem',
-              fontSize: '0.875rem',
-            },
-            success: {
-              iconTheme: {
-                primary: '#22c55e',
-                secondary: '#fff',
-              },
-            },
-            error: {
-              iconTheme: {
-                primary: '#ef4444',
-                secondary: '#fff',
-              },
-            },
-          }}
-        />
-      </div>
-    </Router>
+        </div>
+      </Router>
+    </ErrorBoundary>
   );
 };
 
