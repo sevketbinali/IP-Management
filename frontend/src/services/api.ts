@@ -89,3 +89,9 @@ class APIClient {
 
 // Export singleton instance
 export const apiClient = new APIClient();
+
+// Export configuration for components that need it
+export const apiConfig = {
+  organization: 'Bosch Rexroth',
+  plantCode: 'BURSA',
+};
