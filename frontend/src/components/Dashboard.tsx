@@ -17,7 +17,7 @@ import {
 import { useAppStore } from '@/stores/useAppStore';
 import { useDomainStore } from '@/stores/useDomainStore';
 import { Badge, Button } from '@/components/ui';
-import { formatDateTime, getUtilizationColor } from '@/utils';
+import { formatDateTime } from '@/utils';
 import { apiConfig } from '@/services/api';
 
 interface StatCard {
