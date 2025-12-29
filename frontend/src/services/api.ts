@@ -182,7 +182,8 @@ class APIClient {
 
   // Health check
   async checkHealth(): Promise<{ status: string; service: string; version: string }> {
-    const response = await this.client.get('/health');
+    // Health endpoint is at root level, not under API prefix
+    const response = await axios.get('/health');
     return response.data;
   }
 
