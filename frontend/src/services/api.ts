@@ -1,39 +1,27 @@
 /**
  * API Client for IP Management System
- * Robust HTTP client with error handling, retries, and caching
+ * Simple, reliable HTTP client with proper error handling
  */
 
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import { APIResponse, APIError, AppConfig } from '@/types';
+import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
+import { APIResponse, APIError } from '@/types';
 
-// Configuration
-const config: AppConfig = {
-  apiUrl: (import.meta.env.VITE_API_URL as string) || '/api/v1',
-  plantCode: (import.meta.env.VITE_PLANT_CODE as string) || 'BURSA',
-  organization: (import.meta.env.VITE_ORGANIZATION as string) || 'Bosch Rexroth',
-  apiTimeout: parseInt((import.meta.env.VITE_API_TIMEOUT as string) || '30000'),
-  cacheDuration: parseInt((import.meta.env.VITE_CACHE_DURATION as string) || '300000'),
-  paginationSize: parseInt((import.meta.env.VITE_PAGINATION_SIZE as string) || '50'),
-  enableDebug: (import.meta.env.VITE_ENABLE_DEBUG as string) === 'true',
-  enableAnalytics: (import.meta.env.VITE_ENABLE_ANALYTICS as string) === 'true',
-};
-
-// Response cache for GET requests
-const responseCache = new Map<string, { data: unknown; timestamp: number }>();
+// Simple configuration using only available environment variables
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
+const PLANT_CODE = import.meta.env.VITE_PLANT_CODE || 'BURSA';
+const ORGANIZATION = import.meta.env.VITE_ORGANIZATION || 'Bosch Rexroth';
 
 class APIClient {
   private client: AxiosInstance;
-  private retryCount = 3;
-  private retryDelay = 1000;
 
   constructor() {
     this.client = axios.create({
-      baseURL: config.apiUrl,
-      timeout: config.apiTimeout,
+      baseURL: API_BASE_URL,
+      timeout: 30000,
       headers: {
         'Content-Type': 'application/json',
-        'X-Plant-Code': config.plantCode,
-        'X-Organization': config.organization,
+        'X-Plant-Code': PLANT_CODE,
+        'X-Organization': ORGANIZATION,
       },
     });
 
@@ -41,158 +29,87 @@ class APIClient {
   }
 
   private setupInterceptors(): void {
-    // Request interceptor
+    // Request interceptor for debugging
     this.client.interceptors.request.use(
-      (config: any) => {
-        if (config.method === 'get') {
-          const cacheKey = this.getCacheKey(config);
-          const cached = responseCache.get(cacheKey);
-          
-          if (cached && Date.now() - cached.timestamp < (config.cacheDuration || config.cacheDuration)) {
-            // Return cached response (this is a simplified approach)
-            config.metadata = { cached: true, data: cached.data };
-          }
-        }
-
-        if (config?.enableDebug) {
-          console.log(`[API] ${config.method?.toUpperCase()} ${config.url}`, config.data);
-        }
-
+      (config) => {
+        console.log(`[API] ${config.method?.toUpperCase()} ${config.url}`);
         return config;
       },
-      (error: any) => Promise.reject(error)
+      (error) => Promise.reject(error)
     );
 
-    // Response interceptor
+    // Response interceptor for error handling
     this.client.interceptors.response.use(
-      (response: any) => {
-        // Cache GET responses
-        if (response.config.method === 'get') {
-          const cacheKey = this.getCacheKey(response.config);
-          responseCache.set(cacheKey, {
-            data: response.data,
-            timestamp: Date.now(),
-          });
-        }
-
-        if (config?.enableDebug) {
-          console.log(`[API] Response:`, response.data);
-        }
-
+      (response) => {
+        console.log(`[API] Response: ${response.status}`);
         return response;
       },
-      async (error: any) => {
-        const originalRequest = error.config;
-
-        // Retry logic for network errors
-        if (
-          error.code === 'NETWORK_ERROR' ||
-          error.code === 'TIMEOUT' ||
-          (error.response?.status >= 500 && error.response?.status < 600)
-        ) {
-          if (!originalRequest._retry && originalRequest._retryCount < this.retryCount) {
-            originalRequest._retry = true;
-            originalRequest._retryCount = (originalRequest._retryCount || 0) + 1;
-
-            await this.delay(this.retryDelay * originalRequest._retryCount);
-            return this.client(originalRequest);
-          }
-        }
-
-        // Handle authentication errors
-        if (error.response?.status === 401) {
-          // Clear auth token and redirect to login
-          localStorage.removeItem('auth_token');
-          window.location.href = '/login';
-        }
-
+      (error: AxiosError) => {
+        console.error('[API] Error:', error.message);
         return Promise.reject(this.transformError(error));
       }
     );
   }
 
-  private getCacheKey(config: AxiosRequestConfig): string {
-    return `${config.method}:${config.url}:${JSON.stringify(config.params)}`;
-  }
-
-  private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
-  private transformError(error: unknown): APIError {
-    if (axios.isAxiosError(error)) {
-      return {
-        code: error.code || 'UNKNOWN_ERROR',
-        message: error.response?.data?.message || error.message || 'An unexpected error occurred',
-        details: error.response?.data?.details,
-        timestamp: new Date().toISOString(),
-        requestId: error.response?.headers['x-request-id'],
-      };
-    }
-
-    return {
-      code: 'UNKNOWN_ERROR',
+  private transformError(error: AxiosError): APIError {
+    const apiError: APIError = {
+      code: error.code || 'UNKNOWN_ERROR',
       message: 'An unexpected error occurred',
       timestamp: new Date().toISOString(),
     };
+
+    if (error.response) {
+      // Server responded with error status
+      const responseData = error.response.data as any;
+      apiError.message = responseData?.message || error.message || 'Server error';
+      apiError.details = responseData?.details;
+      apiError.requestId = error.response.headers['x-request-id'] as string;
+    } else if (error.request) {
+      // Request was made but no response received
+      apiError.message = 'Network error - please check your connection';
+      apiError.code = 'NETWORK_ERROR';
+    }
+
+    return apiError;
   }
 
   // Generic HTTP methods
-  async get<T>(url: string, params?: Record<string, unknown>): Promise<APIResponse<T>> {
+  async get<T>(url: string, params?: Record<string, any>): Promise<APIResponse<T>> {
     const response: AxiosResponse<APIResponse<T>> = await this.client.get(url, { params });
     return response.data;
   }
 
-  async post<T>(url: string, data?: unknown): Promise<APIResponse<T>> {
+  async post<T>(url: string, data?: any): Promise<APIResponse<T>> {
     const response: AxiosResponse<APIResponse<T>> = await this.client.post(url, data);
-    this.invalidateCache();
     return response.data;
   }
 
-  async put<T>(url: string, data?: unknown): Promise<APIResponse<T>> {
+  async put<T>(url: string, data?: any): Promise<APIResponse<T>> {
     const response: AxiosResponse<APIResponse<T>> = await this.client.put(url, data);
-    this.invalidateCache();
     return response.data;
   }
 
-  async patch<T>(url: string, data?: unknown): Promise<APIResponse<T>> {
+  async patch<T>(url: string, data?: any): Promise<APIResponse<T>> {
     const response: AxiosResponse<APIResponse<T>> = await this.client.patch(url, data);
-    this.invalidateCache();
     return response.data;
   }
 
   async delete<T>(url: string): Promise<APIResponse<T>> {
     const response: AxiosResponse<APIResponse<T>> = await this.client.delete(url);
-    this.invalidateCache();
     return response.data;
   }
 
-  // Cache management
-  invalidateCache(pattern?: string): void {
-    if (pattern) {
-      for (const key of responseCache.keys()) {
-        if (key.includes(pattern)) {
-          responseCache.delete(key);
-        }
-      }
-    } else {
-      responseCache.clear();
-    }
-  }
-
-  // Health check
+  // Health check - uses absolute path since health endpoint is at root
   async checkHealth(): Promise<{ status: string; service: string; version: string }> {
-    // Health endpoint is at root level, not under API prefix
     const response = await axios.get('/health');
     return response.data;
   }
 
-  // Set authentication token
+  // Authentication methods
   setAuthToken(token: string): void {
     this.client.defaults.headers.common['Authorization'] = `Bearer ${token}`;
   }
 
-  // Remove authentication token
   removeAuthToken(): void {
     delete this.client.defaults.headers.common['Authorization'];
   }
@@ -200,4 +117,3 @@ class APIClient {
 
 // Export singleton instance
 export const apiClient = new APIClient();
-export { config as apiConfig };
