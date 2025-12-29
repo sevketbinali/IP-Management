@@ -7,7 +7,7 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { Domain, DomainFormData, PaginationState, FilterState } from '@/types';
 import { domainService } from '@/services/domainService';
-import toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 
 interface DomainState {
   // Data

@@ -8,14 +8,14 @@ import { APIResponse, APIError, AppConfig } from '@/types';
 
 // Configuration
 const config: AppConfig = {
-  apiUrl: import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1',
-  plantCode: import.meta.env.VITE_PLANT_CODE || 'BURSA',
-  organization: import.meta.env.VITE_ORGANIZATION || 'Bosch Rexroth',
-  apiTimeout: parseInt(import.meta.env.VITE_API_TIMEOUT || '30000'),
-  cacheDuration: parseInt(import.meta.env.VITE_CACHE_DURATION || '300000'),
-  paginationSize: parseInt(import.meta.env.VITE_PAGINATION_SIZE || '50'),
-  enableDebug: import.meta.env.VITE_ENABLE_DEBUG === 'true',
-  enableAnalytics: import.meta.env.VITE_ENABLE_ANALYTICS === 'true',
+  apiUrl: (import.meta.env.VITE_API_URL as string) || '/api/v1',
+  plantCode: (import.meta.env.VITE_PLANT_CODE as string) || 'BURSA',
+  organization: (import.meta.env.VITE_ORGANIZATION as string) || 'Bosch Rexroth',
+  apiTimeout: parseInt((import.meta.env.VITE_API_TIMEOUT as string) || '30000'),
+  cacheDuration: parseInt((import.meta.env.VITE_CACHE_DURATION as string) || '300000'),
+  paginationSize: parseInt((import.meta.env.VITE_PAGINATION_SIZE as string) || '50'),
+  enableDebug: (import.meta.env.VITE_ENABLE_DEBUG as string) === 'true',
+  enableAnalytics: (import.meta.env.VITE_ENABLE_ANALYTICS as string) === 'true',
 };
 
 // Response cache for GET requests
@@ -43,29 +43,29 @@ class APIClient {
   private setupInterceptors(): void {
     // Request interceptor
     this.client.interceptors.request.use(
-      (config) => {
+      (config: any) => {
         if (config.method === 'get') {
           const cacheKey = this.getCacheKey(config);
           const cached = responseCache.get(cacheKey);
           
-          if (cached && Date.now() - cached.timestamp < config.cacheDuration) {
+          if (cached && Date.now() - cached.timestamp < (config.cacheDuration || config.cacheDuration)) {
             // Return cached response (this is a simplified approach)
-            (config as any).metadata = { cached: true, data: cached.data };
+            config.metadata = { cached: true, data: cached.data };
           }
         }
 
-        if ((config as any)?.enableDebug) {
+        if (config?.enableDebug) {
           console.log(`[API] ${config.method?.toUpperCase()} ${config.url}`, config.data);
         }
 
         return config;
       },
-      (error) => Promise.reject(error)
+      (error: any) => Promise.reject(error)
     );
 
     // Response interceptor
     this.client.interceptors.response.use(
-      (response) => {
+      (response: any) => {
         // Cache GET responses
         if (response.config.method === 'get') {
           const cacheKey = this.getCacheKey(response.config);
@@ -81,7 +81,7 @@ class APIClient {
 
         return response;
       },
-      async (error) => {
+      async (error: any) => {
         const originalRequest = error.config;
 
         // Retry logic for network errors
