@@ -1,380 +1,242 @@
 /**
- * IP Management Store
- * State management for IP allocation operations
+ * IP Store
+ * State management for IP device allocations within VLANs
  */
 
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import { IPAllocation, IPAllocationFormData, VLAN, PaginationState, FilterState } from '@/types';
-import { ipService } from '@/services/ipService';
-import toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 
-interface IPState {
+interface IpDevice {
+  id: string;
+  vlanId: string;
+  ipAddress: string;
+  ciName: string;
+  macAddress: string;
+  description: string;
+  status: 'active' | 'inactive' | 'reserved' | 'conflict';
+  deviceType: string;
+  lastSeen: string;
+  isReserved: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface DeviceFormData {
+  vlanId: string;
+  ipAddress: string;
+  ciName: string;
+  macAddress: string;
+  description: string;
+  deviceType: string;
+}
+
+interface IpState {
   // Data
-  allocations: IPAllocation[];
-  selectedAllocation: IPAllocation | null;
-  vlans: VLAN[];
-  selectedVlan: VLAN | null;
-  availableIPs: string[];
-  reservedIPs: string[];
+  devices: IpDevice[];
+  selectedDevice: IpDevice | null;
   
   // UI State
   loading: boolean;
   error: string | null;
-  pagination: PaginationState;
-  filters: FilterState & {
-    vlanId?: string;
-    status?: string;
-    allocationType?: string;
-  };
-  
-  // Modal states
-  showCreateModal: boolean;
-  showEditModal: boolean;
-  showDeleteModal: boolean;
-  showBulkModal: boolean;
-  allocationMode: 'manual' | 'automatic';
   
   // Actions
-  fetchIPAllocations: () => Promise<void>;
-  fetchVLANs: () => Promise<void>;
-  fetchAvailableIPs: (vlanId: string) => Promise<void>;
-  fetchReservedIPs: (vlanId: string) => Promise<void>;
-  createIPAllocation: (data: IPAllocationFormData) => Promise<void>;
-  updateIPAllocation: (id: string, data: Partial<IPAllocationFormData>) => Promise<void>;
-  deleteIPAllocation: (id: string) => Promise<void>;
-  bulkAllocateIPs: (allocations: IPAllocationFormData[]) => Promise<void>;
-  selectAllocation: (allocation: IPAllocation | null) => void;
-  selectVlan: (vlan: VLAN | null) => void;
-  validateMACAddress: (macAddress: string, excludeId?: string) => Promise<boolean>;
-  checkIPAvailability: (vlanId: string, ipAddress: string, excludeId?: string) => Promise<boolean>;
-  getNextAvailableIP: (vlanId: string) => Promise<string | null>;
-  setFilters: (filters: Partial<FilterState & { vlanId?: string; status?: string; allocationType?: string }>) => void;
-  setPagination: (pagination: Partial<PaginationState>) => void;
-  setAllocationMode: (mode: 'manual' | 'automatic') => void;
-  setShowCreateModal: (show: boolean) => void;
-  setShowEditModal: (show: boolean) => void;
-  setShowDeleteModal: (show: boolean) => void;
-  setShowBulkModal: (show: boolean) => void;
+  fetchDevicesByVlan: (vlanId: string) => Promise<void>;
+  addDevice: (data: DeviceFormData) => Promise<void>;
+  updateDevice: (id: string, data: Partial<DeviceFormData>) => Promise<void>;
+  deleteDevice: (id: string) => Promise<void>;
+  selectDevice: (device: IpDevice | null) => void;
   clearError: () => void;
+  
+  // Utility functions
+  isIpAvailable: (vlanId: string, ipAddress: string, excludeDeviceId?: string) => boolean;
+  getDevicesByStatus: (status: string) => IpDevice[];
 }
 
-export const useIPStore = create<IPState>()(
+// Mock data generator
+const generateMockDevices = (vlanId: string): IpDevice[] => {
+  const deviceTypes = ['PLC', 'HMI', 'Robot Controller', 'Vision System', 'Sensor', 'Gateway', 'Switch', 'Server'];
+  const statuses: Array<'active' | 'inactive' | 'reserved' | 'conflict'> = ['active', 'active', 'active', 'inactive'];
+  
+  const baseIp = '192.168.100'; // This should be derived from VLAN subnet
+  const deviceCount = Math.floor(Math.random() * 15) + 5;
+  
+  return Array.from({ length: deviceCount }, (_, i) => {
+    const ipOctet = 10 + i; // Start from .10 to avoid reserved range
+    const isReserved = ipOctet <= 6 || ipOctet >= 254; // First 6 and last IP are reserved
+    
+    return {
+      id: `device-${vlanId}-${i + 1}`,
+      vlanId,
+      ipAddress: `${baseIp}.${ipOctet}`,
+      ciName: `${deviceTypes[i % deviceTypes.length]}-${String(i + 1).padStart(3, '0')}`,
+      macAddress: `00:1B:44:${Math.floor(Math.random() * 256).toString(16).padStart(2, '0').toUpperCase()}:${Math.floor(Math.random() * 256).toString(16).padStart(2, '0').toUpperCase()}:${Math.floor(Math.random() * 256).toString(16).padStart(2, '0').toUpperCase()}`,
+      description: `${deviceTypes[i % deviceTypes.length]} device in manufacturing zone`,
+      status: isReserved ? 'reserved' : statuses[i % statuses.length],
+      deviceType: deviceTypes[i % deviceTypes.length],
+      lastSeen: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000).toISOString(),
+      isReserved,
+      createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+      updatedAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
+    };
+  });
+};
+
+export const useIpStore = create<IpState>()(
   devtools(
     (set, get) => ({
       // Initial state
-      allocations: [],
-      selectedAllocation: null,
-      vlans: [],
-      selectedVlan: null,
-      availableIPs: [],
-      reservedIPs: [],
+      devices: [],
+      selectedDevice: null,
       loading: false,
       error: null,
-      pagination: {
-        page: 1,
-        pageSize: 50,
-        total: 0,
-      },
-      filters: {
-        search: '',
-        sortBy: 'ipAddress',
-        sortOrder: 'asc',
-        vlanId: '',
-        status: '',
-        allocationType: '',
-      },
-      showCreateModal: false,
-      showEditModal: false,
-      showDeleteModal: false,
-      showBulkModal: false,
-      allocationMode: 'automatic',
 
       // Actions
-      fetchIPAllocations: async () => {
+      fetchDevicesByVlan: async (vlanId: string) => {
         set({ loading: true, error: null });
         
         try {
-          const { pagination, filters } = get();
-          const response = await ipService.getIPAllocations({
-            page: pagination.page,
-            pageSize: pagination.pageSize,
-            search: filters.search,
-            vlanId: filters.vlanId,
-            status: filters.status,
-            allocationType: filters.allocationType,
-            sortBy: filters.sortBy,
-            sortOrder: filters.sortOrder,
-          });
-
-          set({
-            allocations: response.data,
-            pagination: {
-              ...pagination,
-              total: response.meta?.pagination?.total || 0,
-            },
-            loading: false,
-          });
-        } catch (error) {
-          set({
-            error: error instanceof Error ? error.message : 'Failed to fetch IP allocations',
-            loading: false,
-          });
-          toast.error('Failed to fetch IP allocations');
-        }
-      },
-
-      fetchVLANs: async () => {
-        try {
-          // This would typically come from the VLAN service
-          // For now, we'll use a mock implementation
-          const mockVLANs: VLAN[] = [
-            {
-              id: '1',
-              vlanId: 100,
-              subnet: '192.168.1.0',
-              subnetMask: 24,
-              defaultGateway: '192.168.1.1',
-              networkStart: '192.168.1.1',
-              networkEnd: '192.168.1.254',
-              zoneId: '1',
-              zoneName: 'Manufacturing Zone A2',
-              zoneManager: 'John Doe',
-              lastFirewallCheck: null,
-              firewall: 'bu4-fw-ha01',
-              ipAllocationCount: 45,
-              availableIpCount: 200,
-              reservedIpCount: 7,
-              totalIpCount: 254,
-              utilizationPercentage: 18,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            },
-          ];
+          // Simulate API call
+          await new Promise(resolve => setTimeout(resolve, 600));
           
-          set({ vlans: mockVLANs });
+          const mockDevices = generateMockDevices(vlanId);
+          
+          set({
+            devices: mockDevices,
+            loading: false,
+          });
         } catch (error) {
-          console.error('Failed to fetch VLANs:', error);
+          set({
+            error: error instanceof Error ? error.message : 'Failed to fetch devices',
+            loading: false,
+          });
+          toast.error('Failed to fetch devices');
         }
       },
 
-      fetchAvailableIPs: async (vlanId: string) => {
-        try {
-          const response = await ipService.getAvailableIPs(vlanId);
-          set({ availableIPs: response.data });
-        } catch (error) {
-          console.error('Failed to fetch available IPs:', error);
-          toast.error('Failed to fetch available IP addresses');
-        }
-      },
-
-      fetchReservedIPs: async (vlanId: string) => {
-        try {
-          const response = await ipService.getReservedIPs(vlanId);
-          set({ reservedIPs: response.data });
-        } catch (error) {
-          console.error('Failed to fetch reserved IPs:', error);
-          toast.error('Failed to fetch reserved IP addresses');
-        }
-      },
-
-      createIPAllocation: async (data: IPAllocationFormData) => {
+      addDevice: async (data: DeviceFormData) => {
         set({ loading: true, error: null });
         
         try {
-          const response = await ipService.createIPAllocation(data);
+          // Validate IP availability
+          if (!get().isIpAvailable(data.vlanId, data.ipAddress)) {
+            throw new Error('IP address is already in use');
+          }
+
+          // Simulate API call
+          await new Promise(resolve => setTimeout(resolve, 800));
+          
+          const newDevice: IpDevice = {
+            id: `device-${Date.now()}`,
+            ...data,
+            status: 'active',
+            lastSeen: new Date().toISOString(),
+            isReserved: false,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
           
           set(state => ({
-            allocations: [...state.allocations, response.data],
+            devices: [...state.devices, newDevice],
             loading: false,
-            showCreateModal: false,
           }));
           
-          toast.success('IP allocation created successfully');
-          
-          // Refresh available IPs if a VLAN is selected
-          const { selectedVlan } = get();
-          if (selectedVlan) {
-            get().fetchAvailableIPs(selectedVlan.id);
-          }
+          toast.success('Device added successfully');
         } catch (error) {
           set({
-            error: error instanceof Error ? error.message : 'Failed to create IP allocation',
+            error: error instanceof Error ? error.message : 'Failed to add device',
             loading: false,
           });
-          toast.error('Failed to create IP allocation');
+          toast.error(error instanceof Error ? error.message : 'Failed to add device');
         }
       },
 
-      updateIPAllocation: async (id: string, data: Partial<IPAllocationFormData>) => {
+      updateDevice: async (id: string, data: Partial<DeviceFormData>) => {
         set({ loading: true, error: null });
         
         try {
-          const response = await ipService.updateIPAllocation(id, data);
+          // If IP address is being changed, validate availability
+          if (data.ipAddress) {
+            const device = get().devices.find(d => d.id === id);
+            if (device && !get().isIpAvailable(device.vlanId, data.ipAddress, id)) {
+              throw new Error('IP address is already in use');
+            }
+          }
+
+          // Simulate API call
+          await new Promise(resolve => setTimeout(resolve, 600));
           
           set(state => ({
-            allocations: state.allocations.map(allocation => 
-              allocation.id === id ? response.data : allocation
+            devices: state.devices.map(device => 
+              device.id === id 
+                ? { ...device, ...data, updatedAt: new Date().toISOString() }
+                : device
             ),
-            selectedAllocation: state.selectedAllocation?.id === id ? response.data : state.selectedAllocation,
+            selectedDevice: state.selectedDevice?.id === id 
+              ? { ...state.selectedDevice, ...data, updatedAt: new Date().toISOString() }
+              : state.selectedDevice,
             loading: false,
-            showEditModal: false,
           }));
           
-          toast.success('IP allocation updated successfully');
+          toast.success('Device updated successfully');
         } catch (error) {
           set({
-            error: error instanceof Error ? error.message : 'Failed to update IP allocation',
+            error: error instanceof Error ? error.message : 'Failed to update device',
             loading: false,
           });
-          toast.error('Failed to update IP allocation');
+          toast.error(error instanceof Error ? error.message : 'Failed to update device');
         }
       },
 
-      deleteIPAllocation: async (id: string) => {
+      deleteDevice: async (id: string) => {
         set({ loading: true, error: null });
         
         try {
-          await ipService.deleteIPAllocation(id);
+          // Check if device is reserved (cannot be deleted)
+          const device = get().devices.find(d => d.id === id);
+          if (device?.isReserved) {
+            throw new Error('Reserved devices cannot be deleted');
+          }
+
+          // Simulate API call
+          await new Promise(resolve => setTimeout(resolve, 400));
           
           set(state => ({
-            allocations: state.allocations.filter(allocation => allocation.id !== id),
-            selectedAllocation: state.selectedAllocation?.id === id ? null : state.selectedAllocation,
+            devices: state.devices.filter(device => device.id !== id),
+            selectedDevice: state.selectedDevice?.id === id ? null : state.selectedDevice,
             loading: false,
-            showDeleteModal: false,
           }));
           
-          toast.success('IP allocation deleted successfully');
-          
-          // Refresh available IPs if a VLAN is selected
-          const { selectedVlan } = get();
-          if (selectedVlan) {
-            get().fetchAvailableIPs(selectedVlan.id);
-          }
+          toast.success('Device deleted successfully');
         } catch (error) {
           set({
-            error: error instanceof Error ? error.message : 'Failed to delete IP allocation',
+            error: error instanceof Error ? error.message : 'Failed to delete device',
             loading: false,
           });
-          toast.error('Failed to delete IP allocation');
+          toast.error(error instanceof Error ? error.message : 'Failed to delete device');
         }
       },
 
-      bulkAllocateIPs: async (allocations: IPAllocationFormData[]) => {
-        set({ loading: true, error: null });
-        
-        try {
-          const response = await ipService.bulkAllocateIPs(allocations);
-          
-          set(state => ({
-            allocations: [...state.allocations, ...response.data.successful],
-            loading: false,
-            showBulkModal: false,
-          }));
-          
-          const successCount = response.data.successful.length;
-          const failCount = response.data.failed.length;
-          
-          if (failCount > 0) {
-            toast.error(`${successCount} allocations created, ${failCount} failed`);
-          } else {
-            toast.success(`${successCount} IP allocations created successfully`);
-          }
-        } catch (error) {
-          set({
-            error: error instanceof Error ? error.message : 'Failed to create bulk IP allocations',
-            loading: false,
-          });
-          toast.error('Failed to create bulk IP allocations');
-        }
-      },
-
-      selectAllocation: (allocation: IPAllocation | null) => {
-        set({ selectedAllocation: allocation });
-      },
-
-      selectVlan: (vlan: VLAN | null) => {
-        set({ selectedVlan: vlan });
-        
-        if (vlan) {
-          get().fetchAvailableIPs(vlan.id);
-          get().fetchReservedIPs(vlan.id);
-        } else {
-          set({ availableIPs: [], reservedIPs: [] });
-        }
-      },
-
-      validateMACAddress: async (macAddress: string, excludeId?: string) => {
-        try {
-          const response = await ipService.validateMACAddress(macAddress, excludeId);
-          return response.data.isValid && response.data.isUnique;
-        } catch (error) {
-          console.error('Failed to validate MAC address:', error);
-          return false;
-        }
-      },
-
-      checkIPAvailability: async (vlanId: string, ipAddress: string, excludeId?: string) => {
-        try {
-          const response = await ipService.checkIPAvailability(vlanId, ipAddress, excludeId);
-          return response.data.isAvailable && !response.data.isReserved;
-        } catch (error) {
-          console.error('Failed to check IP availability:', error);
-          return false;
-        }
-      },
-
-      getNextAvailableIP: async (vlanId: string) => {
-        try {
-          const response = await ipService.getNextAvailableIP(vlanId);
-          return response.data.ipAddress;
-        } catch (error) {
-          console.error('Failed to get next available IP:', error);
-          return null;
-        }
-      },
-
-      setFilters: (newFilters: Partial<FilterState & { vlanId?: string; status?: string; allocationType?: string }>) => {
-        set(state => ({
-          filters: { ...state.filters, ...newFilters },
-          pagination: { ...state.pagination, page: 1 }, // Reset to first page
-        }));
-        
-        // Automatically fetch allocations when filters change
-        setTimeout(() => get().fetchIPAllocations(), 0);
-      },
-
-      setPagination: (newPagination: Partial<PaginationState>) => {
-        set(state => ({
-          pagination: { ...state.pagination, ...newPagination },
-        }));
-        
-        // Automatically fetch allocations when pagination changes
-        setTimeout(() => get().fetchIPAllocations(), 0);
-      },
-
-      setAllocationMode: (mode: 'manual' | 'automatic') => {
-        set({ allocationMode: mode });
-      },
-
-      setShowCreateModal: (show: boolean) => {
-        set({ showCreateModal: show });
-      },
-
-      setShowEditModal: (show: boolean) => {
-        set({ showEditModal: show });
-      },
-
-      setShowDeleteModal: (show: boolean) => {
-        set({ showDeleteModal: show });
-      },
-
-      setShowBulkModal: (show: boolean) => {
-        set({ showBulkModal: show });
+      selectDevice: (device: IpDevice | null) => {
+        set({ selectedDevice: device });
       },
 
       clearError: () => {
         set({ error: null });
+      },
+
+      // Utility functions
+      isIpAvailable: (vlanId: string, ipAddress: string, excludeDeviceId?: string) => {
+        const devices = get().devices.filter(d => 
+          d.vlanId === vlanId && 
+          d.ipAddress === ipAddress &&
+          d.id !== excludeDeviceId
+        );
+        return devices.length === 0;
+      },
+
+      getDevicesByStatus: (status: string) => {
+        return get().devices.filter(device => device.status === status);
       },
     }),
     {

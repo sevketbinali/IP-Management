@@ -1,105 +1,127 @@
 /**
  * VLAN Store
- * State management for VLAN operations
+ * State management for VLAN operations with domain hierarchy
  */
 
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import { VLAN, VLANFormData, Zone, PaginationState, FilterState, IPRange } from '@/types';
-import { vlanService } from '@/services/vlanService';
-import toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 
-interface VLANState {
+interface Vlan {
+  id: string;
+  domainId: string;
+  vlanId: number;
+  name: string;
+  subnet: string;
+  subnetMask: string;
+  gateway: string;
+  netStart: string;
+  netEnd: string;
+  zoneName: string;
+  zoneManager: string;
+  securityType: string;
+  status: 'active' | 'inactive' | 'warning' | 'error';
+  utilization: number;
+  totalIps: number;
+  usedIps: number;
+  lastFirewallCheck: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface VlanFormData {
+  vlanId: number;
+  name: string;
+  subnet: string;
+  subnetMask: string;
+  gateway: string;
+  zoneName: string;
+  zoneManager: string;
+  securityType: string;
+}
+
+interface VlanState {
   // Data
-  vlans: VLAN[];
-  selectedVlan: VLAN | null;
-  zones: Zone[];
-  ipRanges: IPRange[];
+  vlans: Vlan[];
+  selectedVlan: Vlan | null;
   
   // UI State
   loading: boolean;
   error: string | null;
-  pagination: PaginationState;
-  filters: FilterState & {
-    zoneId?: string;
-    firewall?: string;
-  };
   
   // Modal states
   showCreateModal: boolean;
   showEditModal: boolean;
   showDeleteModal: boolean;
-  showIPRangesModal: boolean;
   
   // Actions
-  fetchVLANs: () => Promise<void>;
-  fetchZones: () => Promise<void>;
-  createVLAN: (data: VLANFormData) => Promise<void>;
-  updateVLAN: (id: string, data: Partial<VLANFormData>) => Promise<void>;
-  deleteVLAN: (id: string) => Promise<void>;
-  selectVlan: (vlan: VLAN | null) => void;
-  fetchIPRanges: (vlanId: string) => Promise<void>;
-  validateVLAN: (data: VLANFormData) => Promise<{ isValid: boolean; errors: string[]; warnings: string[] }>;
-  checkVLANIdUnique: (vlanId: number, domainId: string, excludeId?: string) => Promise<boolean>;
-  updateFirewallCheck: (vlanId: string, checkDate: string) => Promise<void>;
-  setFilters: (filters: Partial<FilterState & { zoneId?: string; firewall?: string }>) => void;
-  setPagination: (pagination: Partial<PaginationState>) => void;
+  fetchVlansByDomain: (domainId: string) => Promise<void>;
+  createVlan: (domainId: string, data: VlanFormData) => Promise<void>;
+  updateVlan: (id: string, data: Partial<VlanFormData>) => Promise<void>;
+  deleteVlan: (id: string) => Promise<void>;
+  selectVlan: (vlan: Vlan | null) => void;
   setShowCreateModal: (show: boolean) => void;
   setShowEditModal: (show: boolean) => void;
   setShowDeleteModal: (show: boolean) => void;
-  setShowIPRangesModal: (show: boolean) => void;
   clearError: () => void;
+  
+  // IP Range calculation
+  calculateIpRange: (subnet: string, subnetMask: string) => { netStart: string; netEnd: string; totalIps: number };
 }
 
-export const useVLANStore = create<VLANState>()(
+// Mock data generator
+const generateMockVlans = (domainId: string): Vlan[] => {
+  const securityTypes = ['SL3', 'MFZ_SL4', 'LOG_SL4', 'FMZ_SL4', 'ENG_SL4', 'LRSZ_SL4', 'RSZ_SL4'];
+  const zones = ['Manufacturing A2', 'Manufacturing A4', 'Logistics LOG21', 'Engineering Test', 'Office Network'];
+  const statuses: Array<'active' | 'inactive' | 'warning' | 'error'> = ['active', 'active', 'active', 'warning', 'inactive'];
+  
+  return Array.from({ length: Math.floor(Math.random() * 8) + 2 }, (_, i) => ({
+    id: `vlan-${domainId}-${i + 1}`,
+    domainId,
+    vlanId: 100 + i,
+    name: `${zones[i % zones.length]} VLAN`,
+    subnet: `192.168.${100 + i}.0`,
+    subnetMask: '255.255.255.0',
+    gateway: `192.168.${100 + i}.1`,
+    netStart: `192.168.${100 + i}.7`,
+    netEnd: `192.168.${100 + i}.254`,
+    zoneName: zones[i % zones.length],
+    zoneManager: `manager${i + 1}@bosch.com`,
+    securityType: securityTypes[i % securityTypes.length],
+    status: statuses[i % statuses.length],
+    utilization: Math.floor(Math.random() * 95) + 5,
+    totalIps: 248,
+    usedIps: Math.floor(Math.random() * 200) + 10,
+    lastFirewallCheck: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+    createdAt: new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
+  }));
+};
+
+export const useVlanStore = create<VlanState>()(
   devtools(
     (set, get) => ({
       // Initial state
       vlans: [],
       selectedVlan: null,
-      zones: [],
-      ipRanges: [],
       loading: false,
       error: null,
-      pagination: {
-        page: 1,
-        pageSize: 50,
-        total: 0,
-      },
-      filters: {
-        search: '',
-        sortBy: 'vlanId',
-        sortOrder: 'asc',
-        zoneId: '',
-        firewall: '',
-      },
       showCreateModal: false,
       showEditModal: false,
       showDeleteModal: false,
-      showIPRangesModal: false,
 
       // Actions
-      fetchVLANs: async () => {
+      fetchVlansByDomain: async (domainId: string) => {
         set({ loading: true, error: null });
         
         try {
-          const { pagination, filters } = get();
-          const response = await vlanService.getVLANs({
-            page: pagination.page,
-            pageSize: pagination.pageSize,
-            search: filters.search,
-            zoneId: filters.zoneId,
-            firewall: filters.firewall,
-            sortBy: filters.sortBy,
-            sortOrder: filters.sortOrder,
-          });
-
+          // Simulate API call
+          await new Promise(resolve => setTimeout(resolve, 800));
+          
+          const mockVlans = generateMockVlans(domainId);
+          
           set({
-            vlans: response.data,
-            pagination: {
-              ...pagination,
-              total: response.meta?.pagination?.total || 0,
-            },
+            vlans: mockVlans,
             loading: false,
           });
         } catch (error) {
@@ -111,38 +133,33 @@ export const useVLANStore = create<VLANState>()(
         }
       },
 
-      fetchZones: async () => {
-        try {
-          // This would typically come from a zones service
-          // For now, we'll use a mock implementation
-          const mockZones: Zone[] = [
-            {
-              id: '1',
-              name: 'Manufacturing Zone A2',
-              securityLevel: 'MFZ_SL4' as any,
-              valueStreamId: '1',
-              valueStreamName: 'Production Line A',
-              manager: 'John Doe',
-              vlanCount: 5,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            },
-          ];
-          
-          set({ zones: mockZones });
-        } catch (error) {
-          console.error('Failed to fetch zones:', error);
-        }
-      },
-
-      createVLAN: async (data: VLANFormData) => {
+      createVlan: async (domainId: string, data: VlanFormData) => {
         set({ loading: true, error: null });
         
         try {
-          const response = await vlanService.createVLAN(data);
+          // Calculate IP range
+          const { netStart, netEnd, totalIps } = get().calculateIpRange(data.subnet, data.subnetMask);
+          
+          // Simulate API call
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          const newVlan: Vlan = {
+            id: `vlan-${Date.now()}`,
+            domainId,
+            ...data,
+            netStart,
+            netEnd,
+            status: 'active',
+            utilization: 0,
+            totalIps,
+            usedIps: 0,
+            lastFirewallCheck: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
           
           set(state => ({
-            vlans: [...state.vlans, response.data],
+            vlans: [...state.vlans, newVlan],
             loading: false,
             showCreateModal: false,
           }));
@@ -157,17 +174,22 @@ export const useVLANStore = create<VLANState>()(
         }
       },
 
-      updateVLAN: async (id: string, data: Partial<VLANFormData>) => {
+      updateVlan: async (id: string, data: Partial<VlanFormData>) => {
         set({ loading: true, error: null });
         
         try {
-          const response = await vlanService.updateVLAN(id, data);
+          // Simulate API call
+          await new Promise(resolve => setTimeout(resolve, 800));
           
           set(state => ({
             vlans: state.vlans.map(vlan => 
-              vlan.id === id ? response.data : vlan
+              vlan.id === id 
+                ? { ...vlan, ...data, updatedAt: new Date().toISOString() }
+                : vlan
             ),
-            selectedVlan: state.selectedVlan?.id === id ? response.data : state.selectedVlan,
+            selectedVlan: state.selectedVlan?.id === id 
+              ? { ...state.selectedVlan, ...data, updatedAt: new Date().toISOString() }
+              : state.selectedVlan,
             loading: false,
             showEditModal: false,
           }));
@@ -182,11 +204,12 @@ export const useVLANStore = create<VLANState>()(
         }
       },
 
-      deleteVLAN: async (id: string) => {
+      deleteVlan: async (id: string) => {
         set({ loading: true, error: null });
         
         try {
-          await vlanService.deleteVLAN(id);
+          // Simulate API call
+          await new Promise(resolve => setTimeout(resolve, 600));
           
           set(state => ({
             vlans: state.vlans.filter(vlan => vlan.id !== id),
@@ -205,82 +228,8 @@ export const useVLANStore = create<VLANState>()(
         }
       },
 
-      selectVlan: (vlan: VLAN | null) => {
+      selectVlan: (vlan: Vlan | null) => {
         set({ selectedVlan: vlan });
-      },
-
-      fetchIPRanges: async (vlanId: string) => {
-        set({ loading: true, error: null });
-        
-        try {
-          const response = await vlanService.getIPRanges(vlanId);
-          set({
-            ipRanges: response.data,
-            loading: false,
-          });
-        } catch (error) {
-          set({
-            error: error instanceof Error ? error.message : 'Failed to fetch IP ranges',
-            loading: false,
-          });
-          toast.error('Failed to fetch IP ranges');
-        }
-      },
-
-      validateVLAN: async (data: VLANFormData) => {
-        try {
-          const response = await vlanService.validateVLAN(data);
-          return response.data;
-        } catch (error) {
-          toast.error('Failed to validate VLAN configuration');
-          return { isValid: false, errors: ['Validation failed'], warnings: [] };
-        }
-      },
-
-      checkVLANIdUnique: async (vlanId: number, domainId: string, excludeId?: string) => {
-        try {
-          const response = await vlanService.checkVLANIdUnique(vlanId, domainId, excludeId);
-          return response.data.isUnique;
-        } catch (error) {
-          console.error('Failed to check VLAN ID uniqueness:', error);
-          return false;
-        }
-      },
-
-      updateFirewallCheck: async (vlanId: string, checkDate: string) => {
-        try {
-          const response = await vlanService.updateFirewallCheck(vlanId, checkDate);
-          
-          set(state => ({
-            vlans: state.vlans.map(vlan => 
-              vlan.id === vlanId ? response.data : vlan
-            ),
-            selectedVlan: state.selectedVlan?.id === vlanId ? response.data : state.selectedVlan,
-          }));
-          
-          toast.success('Firewall check date updated');
-        } catch (error) {
-          toast.error('Failed to update firewall check date');
-        }
-      },
-
-      setFilters: (newFilters: Partial<FilterState & { zoneId?: string; firewall?: string }>) => {
-        set(state => ({
-          filters: { ...state.filters, ...newFilters },
-          pagination: { ...state.pagination, page: 1 }, // Reset to first page
-        }));
-        
-        // Automatically fetch VLANs when filters change
-        setTimeout(() => get().fetchVLANs(), 0);
-      },
-
-      setPagination: (newPagination: Partial<PaginationState>) => {
-        set(state => ({
-          pagination: { ...state.pagination, ...newPagination },
-        }));
-        
-        // Automatically fetch VLANs when pagination changes
-        setTimeout(() => get().fetchVLANs(), 0);
       },
 
       setShowCreateModal: (show: boolean) => {
@@ -295,12 +244,39 @@ export const useVLANStore = create<VLANState>()(
         set({ showDeleteModal: show });
       },
 
-      setShowIPRangesModal: (show: boolean) => {
-        set({ showIPRangesModal: show });
-      },
-
       clearError: () => {
         set({ error: null });
+      },
+
+      // IP Range calculation utility
+      calculateIpRange: (subnet: string, subnetMask: string) => {
+        try {
+          // Simple IP range calculation for common subnet masks
+          const subnetParts = subnet.split('.').map(Number);
+          const maskParts = subnetMask.split('.').map(Number);
+          
+          // Calculate network and broadcast addresses
+          const networkParts = subnetParts.map((part, i) => part & maskParts[i]);
+          const broadcastParts = networkParts.map((part, i) => part | (255 - maskParts[i]));
+          
+          // First 6 IPs and last IP are reserved
+          const netStartParts = [...networkParts];
+          netStartParts[3] += 7; // Skip first 6 + network address
+          
+          const netEndParts = [...broadcastParts];
+          netEndParts[3] -= 1; // Skip broadcast address
+          
+          const netStart = netStartParts.join('.');
+          const netEnd = netEndParts.join('.');
+          
+          // Calculate total available IPs (excluding reserved)
+          const totalIps = (broadcastParts[3] - networkParts[3] + 1) - 7; // -7 for reserved IPs
+          
+          return { netStart, netEnd, totalIps };
+        } catch (error) {
+          // Fallback for invalid input
+          return { netStart: '192.168.1.7', netEnd: '192.168.1.254', totalIps: 248 };
+        }
       },
     }),
     {

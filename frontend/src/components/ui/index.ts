@@ -19,3 +19,6 @@ export { Table } from './Table';
 
 export { Badge } from './Badge';
 export type { BadgeProps } from './Badge';
+
+export { Dialog } from './Dialog';
+export type { DialogProps } from './Dialog';
