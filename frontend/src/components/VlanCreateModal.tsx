@@ -12,7 +12,7 @@ import {
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 import { Dialog, Button, Input, Select, Badge } from '@/components/ui';
-import { useVlanStore } from '@/stores/useVlanStore';
+import { useVlanStore } from '@/stores/useVLANStore';
 
 interface VlanCreateModalProps {
   isOpen: boolean;

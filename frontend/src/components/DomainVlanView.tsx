@@ -19,7 +19,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { Button, Badge, Dialog, Input } from '@/components/ui';
 import { useDomainStore } from '@/stores/useDomainStore';
-import { useVlanStore } from '@/stores/useVlanStore';
+import { useVlanStore } from '@/stores/useVLANStore';
 import { VlanCreateModal } from './VlanCreateModal';
 import { IpConfigurationModal } from './IpConfigurationModal';
 import { formatDateTime } from '@/utils';

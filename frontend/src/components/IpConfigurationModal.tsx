@@ -17,7 +17,7 @@ import {
   ComputerDesktopIcon,
 } from '@heroicons/react/24/outline';
 import { Dialog, Button, Input, Badge, Table } from '@/components/ui';
-import { useIpStore } from '@/stores/useIpStore';
+import { useIpStore } from '@/stores/useIPStore';
 import { formatDateTime } from '@/utils';
 
 interface IpConfigurationModalProps {
