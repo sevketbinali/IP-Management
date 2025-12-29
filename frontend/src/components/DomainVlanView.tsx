@@ -32,6 +32,7 @@ interface VlanCardProps {
 
 const VlanCard: React.FC<VlanCardProps> = ({ vlan, onSelect, onConfigure }) => {
   const getStatusColor = (status: string) => {
+    if (!status) return 'secondary';
     switch (status) {
       case 'active': return 'success';
       case 'inactive': return 'secondary';
@@ -67,7 +68,7 @@ const VlanCard: React.FC<VlanCardProps> = ({ vlan, onSelect, onConfigure }) => {
             </div>
           </div>
           <Badge variant={getStatusColor(vlan.status)} size="sm">
-            {vlan.status.toUpperCase()}
+            {vlan.status ? vlan.status.toUpperCase() : 'UNKNOWN'}
           </Badge>
         </div>
 

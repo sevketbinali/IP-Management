@@ -5,6 +5,7 @@
 
 import React, { useEffect } from 'react';
 import { PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { useNavigate } from 'react-router-dom';
 import { useDomainStore } from '@/stores/useDomainStore';
 import { Domain, DomainType, TableColumn } from '@/types';
 import { Button, Input, Table, Modal, Select, Badge } from '@/components/ui';
@@ -13,6 +14,7 @@ import { DomainForm } from './DomainForm';
 import toast from 'react-hot-toast';
 
 const DomainManagement: React.FC = () => {
+  const navigate = useNavigate();
   const {
     domains,
     selectedDomain,
@@ -63,6 +65,10 @@ const DomainManagement: React.FC = () => {
     setShowDeleteModal(true);
   };
 
+  const handleView = (domain: Domain): void => {
+    navigate(`/domains/${domain.id}`);
+  };
+
   const confirmDelete = async (): Promise<void> => {
     if (selectedDomain) {
       await deleteDomain(selectedDomain.id);
@@ -70,6 +76,7 @@ const DomainManagement: React.FC = () => {
   };
 
   const getDomainTypeColor = (type: DomainType): string => {
+    if (!type) return 'bg-secondary-100 text-secondary-800';
     switch (type) {
       case DomainType.MFG:
         return 'bg-success-100 text-success-800';
@@ -85,6 +92,7 @@ const DomainManagement: React.FC = () => {
   };
 
   const getDomainDescription = (type: DomainType): string => {
+    if (!type) return 'Unknown domain type';
     switch (type) {
       case DomainType.MFG:
         return 'Manufacturing (A2, A4, A6, A10, MCO)';
@@ -235,6 +243,7 @@ const DomainManagement: React.FC = () => {
         actions={{
           onEdit: handleEdit,
           onDelete: handleDelete,
+          onView: handleView,
         }}
       />
 

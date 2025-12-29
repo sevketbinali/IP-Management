@@ -1,254 +1,140 @@
 /**
  * Utility Functions for IP Management System
- * Industrial-grade network management utilities
+ * Common helper functions and utilities
  */
 
-import { clsx, type ClassValue } from 'clsx';
-import { format, parseISO, isValid } from 'date-fns';
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 /**
- * Combine class names with clsx
+ * Combines class names using clsx and tailwind-merge
  */
-export function cn(...inputs: ClassValue[]): string {
-  return clsx(inputs);
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
 }
 
 /**
- * Format date strings for display
+ * Formats a date string to a human-readable format
  */
-export function formatDate(dateString: string | null, formatStr = 'MMM dd, yyyy'): string {
-  if (!dateString) return 'Never';
-  
+export function formatDateTime(dateString: string): string {
   try {
-    const date = parseISO(dateString);
-    return isValid(date) ? format(date, formatStr) : 'Invalid date';
-  } catch {
-    return 'Invalid date';
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(date);
+  } catch (error) {
+    return 'Invalid Date';
   }
 }
 
 /**
- * Format date with time for detailed views
+ * Formats a date to relative time (e.g., "2 hours ago")
  */
-export function formatDateTime(dateString: string | null): string {
-  return formatDate(dateString, 'MMM dd, yyyy HH:mm');
-}
-
-/**
- * Calculate days since a date
- */
-export function daysSince(dateString: string | null): number {
-  if (!dateString) return Infinity;
-  
+export function formatRelativeTime(dateString: string): string {
   try {
-    const date = parseISO(dateString);
-    if (!isValid(date)) return Infinity;
-    
+    const date = new Date(dateString);
     const now = new Date();
-    const diffTime = now.getTime() - date.getTime();
-    return Math.floor(diffTime / (1000 * 60 * 60 * 24));
-  } catch {
-    return Infinity;
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (diffInSeconds < 60) {
+      return 'Just now';
+    } else if (diffInSeconds < 3600) {
+      const minutes = Math.floor(diffInSeconds / 60);
+      return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    } else if (diffInSeconds < 86400) {
+      const hours = Math.floor(diffInSeconds / 3600);
+      return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    } else if (diffInSeconds < 2592000) {
+      const days = Math.floor(diffInSeconds / 86400);
+      return `${days} day${days > 1 ? 's' : ''} ago`;
+    } else {
+      return formatDateTime(dateString);
+    }
+  } catch (error) {
+    return 'Invalid Date';
   }
 }
 
 /**
- * Validate IP address format
+ * Gets color class for security levels
  */
-export function isValidIPAddress(ip: string): boolean {
-  const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-  return ipRegex.test(ip);
+export function getSecurityLevelColor(level: string): string {
+  switch (level) {
+    case 'SL3':
+      return 'bg-primary-100 text-primary-800 border-primary-200';
+    case 'MFZ_SL4':
+      return 'bg-success-100 text-success-800 border-success-200';
+    case 'LOG_SL4':
+      return 'bg-warning-100 text-warning-800 border-warning-200';
+    case 'FMZ_SL4':
+      return 'bg-secondary-100 text-secondary-800 border-secondary-200';
+    case 'ENG_SL4':
+      return 'bg-info-100 text-info-800 border-info-200';
+    case 'LRSZ_SL4':
+      return 'bg-error-100 text-error-800 border-error-200';
+    case 'RSZ_SL4':
+      return 'bg-purple-100 text-purple-800 border-purple-200';
+    default:
+      return 'bg-secondary-100 text-secondary-800 border-secondary-200';
+  }
 }
 
 /**
- * Validate MAC address format
+ * Validates IP address format
  */
-export function isValidMACAddress(mac: string): boolean {
+export function isValidIpAddress(ip: string): boolean {
+  const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
+  if (!ipRegex.test(ip)) return false;
+  
+  const parts = ip.split('.');
+  return parts.every(part => {
+    const num = parseInt(part, 10);
+    return num >= 0 && num <= 255;
+  });
+}
+
+/**
+ * Validates MAC address format
+ */
+export function isValidMacAddress(mac: string): boolean {
   const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
   return macRegex.test(mac);
 }
 
 /**
- * Format MAC address to standard format (XX:XX:XX:XX:XX:XX)
+ * Validates VLAN ID
  */
-export function formatMACAddress(mac: string): string {
-  // Remove all non-hex characters
-  const cleanMac = mac.replace(/[^0-9A-Fa-f]/g, '');
-  
-  if (cleanMac.length !== 12) {
-    return mac; // Return original if invalid length
-  }
-  
-  // Insert colons every 2 characters
-  return cleanMac.match(/.{2}/g)?.join(':').toUpperCase() || mac;
-}
-
-/**
- * Validate VLAN ID range
- */
-export function isValidVLANId(vlanId: number): boolean {
+export function isValidVlanId(vlanId: number): boolean {
   return vlanId >= 1 && vlanId <= 4094;
 }
 
 /**
- * Calculate subnet mask from CIDR notation
+ * Calculates network utilization percentage
  */
-export function cidrToSubnetMask(cidr: number): string {
-  if (cidr < 0 || cidr > 32) {
-    throw new Error('Invalid CIDR notation');
-  }
-  
-  const mask = (0xffffffff << (32 - cidr)) >>> 0;
-  return [
-    (mask >>> 24) & 0xff,
-    (mask >>> 16) & 0xff,
-    (mask >>> 8) & 0xff,
-    mask & 0xff
-  ].join('.');
+export function calculateUtilization(used: number, total: number): number {
+  if (total === 0) return 0;
+  return Math.round((used / total) * 100);
 }
 
 /**
- * Calculate CIDR from subnet mask
+ * Generates a random ID
  */
-export function subnetMaskToCidr(mask: string): number {
-  const parts = mask.split('.').map(Number);
-  if (parts.length !== 4 || parts.some(part => part < 0 || part > 255)) {
-    throw new Error('Invalid subnet mask');
-  }
-  
-  const binary = parts.map(part => part.toString(2).padStart(8, '0')).join('');
-  const cidr = binary.indexOf('0');
-  return cidr === -1 ? 32 : cidr;
+export function generateId(): string {
+  return Math.random().toString(36).substr(2, 9);
 }
 
 /**
- * Calculate network address from IP and subnet mask
+ * Debounces a function call
  */
-export function calculateNetworkAddress(ip: string, subnetMask: string): string {
-  const ipParts = ip.split('.').map(Number);
-  const maskParts = subnetMask.split('.').map(Number);
-  
-  if (ipParts.length !== 4 || maskParts.length !== 4) {
-    throw new Error('Invalid IP address or subnet mask');
-  }
-  
-  const networkParts = ipParts.map((ipPart, index) => ipPart & maskParts[index]);
-  return networkParts.join('.');
-}
-
-/**
- * Calculate broadcast address from network address and subnet mask
- */
-export function calculateBroadcastAddress(networkAddress: string, subnetMask: string): string {
-  const networkParts = networkAddress.split('.').map(Number);
-  const maskParts = subnetMask.split('.').map(Number);
-  
-  if (networkParts.length !== 4 || maskParts.length !== 4) {
-    throw new Error('Invalid network address or subnet mask');
-  }
-  
-  const broadcastParts = networkParts.map((networkPart, index) => 
-    networkPart | (255 - maskParts[index])
-  );
-  return broadcastParts.join('.');
-}
-
-/**
- * Generate IP range from network address and subnet mask
- */
-export function generateIPRange(networkAddress: string, subnetMask: string): {
-  firstUsable: string;
-  lastUsable: string;
-  totalIPs: number;
-  usableIPs: number;
-} {
-  const networkParts = networkAddress.split('.').map(Number);
-  const maskParts = subnetMask.split('.').map(Number);
-  
-  // Calculate total IPs in subnet
-  const hostBits = maskParts.reduce((bits, octet) => {
-    return bits + (8 - octet.toString(2).split('1').length + 1);
-  }, 0);
-  
-  const totalIPs = Math.pow(2, hostBits);
-  const usableIPs = totalIPs - 2; // Exclude network and broadcast
-  
-  // First usable IP (network + 1)
-  const firstUsableParts = [...networkParts];
-  firstUsableParts[3] += 1;
-  
-  // Last usable IP (broadcast - 1)
-  const broadcastAddress = calculateBroadcastAddress(networkAddress, subnetMask);
-  const lastUsableParts = broadcastAddress.split('.').map(Number);
-  lastUsableParts[3] -= 1;
-  
-  return {
-    firstUsable: firstUsableParts.join('.'),
-    lastUsable: lastUsableParts.join('.'),
-    totalIPs,
-    usableIPs,
-  };
-}
-
-/**
- * Check if IP is in subnet range
- */
-export function isIPInSubnet(ip: string, networkAddress: string, subnetMask: string): boolean {
-  try {
-    const calculatedNetwork = calculateNetworkAddress(ip, subnetMask);
-    return calculatedNetwork === networkAddress;
-  } catch {
-    return false;
-  }
-}
-
-/**
- * Generate reserved IP addresses (first 6 + last)
- */
-export function generateReservedIPs(networkAddress: string, subnetMask: string): string[] {
-  const range = generateIPRange(networkAddress, subnetMask);
-  const reserved: string[] = [];
-  
-  // First 6 IPs
-  const firstParts = range.firstUsable.split('.').map(Number);
-  for (let i = 0; i < 6; i++) {
-    const ip = [...firstParts];
-    ip[3] += i;
-    if (ip[3] <= 255) {
-      reserved.push(ip.join('.'));
-    }
-  }
-  
-  // Last IP
-  reserved.push(range.lastUsable);
-  
-  return reserved;
-}
-
-/**
- * Format bytes to human readable format
- */
-export function formatBytes(bytes: number, decimals = 2): string {
-  if (bytes === 0) return '0 Bytes';
-  
-  const k = 1024;
-  const dm = decimals < 0 ? 0 : decimals;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-  
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-}
-
-/**
- * Debounce function for search inputs
- */
-export function debounce<T extends (...args: unknown[]) => unknown>(
+export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout;
-  
   return (...args: Parameters<T>) => {
     clearTimeout(timeout);
     timeout = setTimeout(() => func(...args), wait);
@@ -256,101 +142,139 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
 }
 
 /**
- * Throttle function for scroll events
+ * Throttles a function call
  */
-export function throttle<T extends (...args: unknown[]) => unknown>(
+export function throttle<T extends (...args: any[]) => any>(
   func: T,
   limit: number
 ): (...args: Parameters<T>) => void {
   let inThrottle: boolean;
-  
   return (...args: Parameters<T>) => {
     if (!inThrottle) {
       func(...args);
       inThrottle = true;
-      setTimeout(() => inThrottle = false, limit);
+      setTimeout(() => (inThrottle = false), limit);
     }
   };
 }
 
 /**
- * Generate unique ID
+ * Formats file size in bytes to human readable format
  */
-export function generateId(): string {
-  return Math.random().toString(36).substr(2, 9);
+export function formatFileSize(bytes: number): string {
+  if (bytes === 0) return '0 Bytes';
+  
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
 /**
- * Capitalize first letter of string
+ * Capitalizes the first letter of a string
  */
 export function capitalize(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 /**
- * Convert camelCase to Title Case
+ * Converts camelCase to kebab-case
  */
-export function camelToTitle(str: string): string {
-  return str
-    .replace(/([A-Z])/g, ' $1')
-    .replace(/^./, char => char.toUpperCase())
-    .trim();
+export function camelToKebab(str: string): string {
+  return str.replace(/([a-z0-9]|(?=[A-Z]))([A-Z])/g, '$1-$2').toLowerCase();
 }
 
 /**
- * Truncate text with ellipsis
+ * Converts kebab-case to camelCase
  */
-export function truncate(text: string, length: number): string {
-  if (text.length <= length) return text;
-  return text.slice(0, length) + '...';
+export function kebabToCamel(str: string): string {
+  return str.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
 }
 
 /**
- * Get status color based on utilization percentage
+ * Truncates text to specified length with ellipsis
  */
-export function getUtilizationColor(percentage: number): string {
-  if (percentage >= 90) return 'text-error-600 bg-error-50';
-  if (percentage >= 75) return 'text-warning-600 bg-warning-50';
-  if (percentage >= 50) return 'text-primary-600 bg-primary-50';
-  return 'text-success-600 bg-success-50';
+export function truncateText(text: string, maxLength: number): string {
+  if (text.length <= maxLength) return text;
+  return text.slice(0, maxLength) + '...';
 }
 
 /**
- * Get security level color
+ * Checks if a value is empty (null, undefined, empty string, empty array, empty object)
  */
-export function getSecurityLevelColor(level: string): string {
-  switch (level) {
-    case 'SL3':
-      return 'text-primary-600 bg-primary-50';
-    case 'MFZ_SL4':
-      return 'text-success-600 bg-success-50';
-    case 'LOG_SL4':
-      return 'text-warning-600 bg-warning-50';
-    case 'FMZ_SL4':
-      return 'text-secondary-600 bg-secondary-50';
-    case 'ENG_SL4':
-      return 'text-purple-600 bg-purple-50';
-    case 'LRSZ_SL4':
-      return 'text-error-600 bg-error-50';
-    case 'RSZ_SL4':
-      return 'text-red-600 bg-red-50';
-    default:
-      return 'text-secondary-600 bg-secondary-50';
+export function isEmpty(value: any): boolean {
+  if (value == null) return true;
+  if (typeof value === 'string') return value.trim() === '';
+  if (Array.isArray(value)) return value.length === 0;
+  if (typeof value === 'object') return Object.keys(value).length === 0;
+  return false;
+}
+
+/**
+ * Deep clones an object
+ */
+export function deepClone<T>(obj: T): T {
+  if (obj === null || typeof obj !== 'object') return obj;
+  if (obj instanceof Date) return new Date(obj.getTime()) as any;
+  if (obj instanceof Array) return obj.map(item => deepClone(item)) as any;
+  if (typeof obj === 'object') {
+    const clonedObj = {} as any;
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        clonedObj[key] = deepClone(obj[key]);
+      }
+    }
+    return clonedObj;
   }
+  return obj;
 }
 
 /**
- * Get IP status color
+ * Sorts an array of objects by a key
  */
-export function getIPStatusColor(status: string): string {
-  switch (status.toLowerCase()) {
-    case 'allocated':
-      return 'text-error-600 bg-error-50';
-    case 'available':
-      return 'text-success-600 bg-success-50';
-    case 'reserved':
-      return 'text-warning-600 bg-warning-50';
-    default:
-      return 'text-secondary-600 bg-secondary-50';
-  }
+export function sortBy<T>(
+  array: T[],
+  key: keyof T,
+  direction: 'asc' | 'desc' = 'asc'
+): T[] {
+  return [...array].sort((a, b) => {
+    const aVal = a[key];
+    const bVal = b[key];
+    
+    if (aVal < bVal) return direction === 'asc' ? -1 : 1;
+    if (aVal > bVal) return direction === 'asc' ? 1 : -1;
+    return 0;
+  });
+}
+
+/**
+ * Groups an array of objects by a key
+ */
+export function groupBy<T>(array: T[], key: keyof T): Record<string, T[]> {
+  return array.reduce((groups, item) => {
+    const group = String(item[key]);
+    groups[group] = groups[group] || [];
+    groups[group].push(item);
+    return groups;
+  }, {} as Record<string, T[]>);
+}
+
+/**
+ * Filters an array of objects by search term
+ */
+export function searchFilter<T>(
+  array: T[],
+  searchTerm: string,
+  searchKeys: (keyof T)[]
+): T[] {
+  if (!searchTerm.trim()) return array;
+  
+  const term = searchTerm.toLowerCase();
+  return array.filter(item =>
+    searchKeys.some(key => {
+      const value = String(item[key]).toLowerCase();
+      return value.includes(term);
+    })
+  );
 }

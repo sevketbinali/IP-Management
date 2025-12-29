@@ -1,15 +1,19 @@
 /**
  * Domain Form Component
- * Form for creating and editing domains with comprehensive validation
+ * Form for creating and editing domains with validation
  */
 
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import React, { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { Domain, DomainType, DomainFormData } from '@/types';
 import { Button, Input, Select } from '@/components/ui';
 import { useDomainStore } from '@/stores/useDomainStore';
+
+interface DomainFormProps {
+  domain?: Domain;
+  onCancel: () => void;
+  mode: 'create' | 'edit';
+}
 
 const domainSchema = z.object({
   name: z.nativeEnum(DomainType, {
@@ -22,174 +26,225 @@ const domainSchema = z.object({
     .max(500, 'Description must not exceed 500 characters'),
 });
 
-interface DomainFormProps {
-  domain?: Domain;
-  onCancel: () => void;
-  mode: 'create' | 'edit';
-}
+const DOMAIN_OPTIONS = [
+  {
+    value: DomainType.MFG,
+    label: 'MFG - Manufacturing',
+    description: 'Manufacturing domains (A2, A4, A6, A10, MCO)',
+  },
+  {
+    value: DomainType.LOG,
+    label: 'LOG - Logistics',
+    description: 'Logistics operations (LOG21)',
+  },
+  {
+    value: DomainType.FCM,
+    label: 'FCM - Facility Management',
+    description: 'Facility systems (Analyzers, Cameras, Building Systems)',
+  },
+  {
+    value: DomainType.ENG,
+    label: 'ENG - Engineering',
+    description: 'Engineering test benches and development',
+  },
+];
 
-const DomainForm: React.FC<DomainFormProps> = ({ domain, onCancel, mode }) => {
+export const DomainForm: React.FC<DomainFormProps> = ({
+  domain,
+  onCancel,
+  mode,
+}) => {
   const { createDomain, updateDomain, loading } = useDomainStore();
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isValid },
-    setValue,
-    watch,
-  } = useForm<DomainFormData>({
-    resolver: zodResolver(domainSchema),
-    defaultValues: {
-      name: domain?.name || DomainType.MFG,
-      description: domain?.description || '',
-    },
-    mode: 'onChange',
+  
+  const [formData, setFormData] = useState<DomainFormData>({
+    name: domain?.name || DomainType.MFG,
+    description: domain?.description || '',
   });
 
-  const selectedDomainType = watch('name');
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
-  const domainTypeOptions = [
-    {
-      value: DomainType.MFG,
-      label: 'Manufacturing (MFG)',
-      description: 'Production lines: A2, A4, A6, A10, MCO',
-    },
-    {
-      value: DomainType.LOG,
-      label: 'Logistics (LOG)',
-      description: 'Logistics operations: LOG21',
-    },
-    {
-      value: DomainType.FCM,
-      label: 'Facility Management (FCM)',
-      description: 'Analyzers, Cameras, Building Systems',
-    },
-    {
-      value: DomainType.ENG,
-      label: 'Engineering (ENG)',
-      description: 'Engineering Test Benches',
-    },
-  ];
+  // Update form data when domain prop changes
+  useEffect(() => {
+    if (domain) {
+      setFormData({
+        name: domain.name,
+        description: domain.description,
+      });
+    }
+  }, [domain]);
 
-  const getDefaultDescription = (domainType: DomainType): string => {
-    switch (domainType) {
-      case DomainType.MFG:
-        return 'Manufacturing domain covering production lines A2, A4, A6, A10, and MCO. Includes all manufacturing equipment, PLCs, HMIs, and production monitoring systems.';
-      case DomainType.LOG:
-        return 'Logistics domain for LOG21 operations. Covers warehouse management systems, conveyor controls, sorting equipment, and logistics tracking devices.';
-      case DomainType.FCM:
-        return 'Facility Management domain including environmental analyzers, security cameras, HVAC systems, lighting controls, and building automation systems.';
-      case DomainType.ENG:
-        return 'Engineering domain for test benches and development equipment. Includes prototype testing systems, measurement devices, and engineering workstations.';
-      default:
-        return '';
+  const validateField = (name: keyof DomainFormData, value: any) => {
+    try {
+      domainSchema.pick({ [name]: true }).parse({ [name]: value });
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        setErrors(prev => ({
+          ...prev,
+          [name]: error.errors[0]?.message || 'Invalid value',
+        }));
+      }
     }
   };
 
-  const handleDomainTypeChange = (value: string): void => {
-    const domainType = value as DomainType;
-    setValue('name', domainType);
+  const handleInputChange = (name: keyof DomainFormData, value: any) => {
+    setFormData(prev => ({ ...prev, [name]: value }));
     
-    // Auto-fill description if it's empty or matches a default description
-    const currentDescription = watch('description');
-    if (!currentDescription || Object.values(DomainType).some(type => 
-      currentDescription === getDefaultDescription(type)
-    )) {
-      setValue('description', getDefaultDescription(domainType));
+    if (touched[name]) {
+      validateField(name, value);
     }
   };
 
-  const onSubmit = async (data: DomainFormData): Promise<void> => {
+  const handleBlur = (name: keyof DomainFormData) => {
+    setTouched(prev => ({ ...prev, [name]: true }));
+    validateField(name, formData[name]);
+  };
+
+  const validateForm = (): boolean => {
+    try {
+      domainSchema.parse(formData);
+      setErrors({});
+      return true;
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const newErrors: Record<string, string> = {};
+        error.errors.forEach(err => {
+          if (err.path[0]) {
+            newErrors[err.path[0] as string] = err.message;
+          }
+        });
+        setErrors(newErrors);
+      }
+      return false;
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Mark all fields as touched
+    setTouched({
+      name: true,
+      description: true,
+    });
+
+    if (!validateForm()) {
+      return;
+    }
+
     try {
       if (mode === 'create') {
-        await createDomain(data);
+        await createDomain(formData);
       } else if (domain) {
-        await updateDomain(domain.id, data);
+        await updateDomain(domain.id, formData);
       }
     } catch (error) {
-      // Error handling is managed by the store
-      console.error('Form submission error:', error);
+      // Error handling is done in the store
     }
   };
 
+  const selectedDomainOption = DOMAIN_OPTIONS.find(
+    option => option.value === formData.name
+  );
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {/* Domain Type Selection */}
-      <Select
-        label="Domain Type"
-        value={selectedDomainType}
-        onChange={handleDomainTypeChange}
-        options={domainTypeOptions}
-        error={errors.name?.message}
-        required
-        helperText="Select the business domain type for network organization"
-      />
+      <div>
+        <label className="block text-sm font-medium text-secondary-700 mb-2">
+          Domain Type *
+        </label>
+        <Select
+          value={formData.name}
+          onChange={(value) => handleInputChange('name', value as DomainType)}
+          onBlur={() => handleBlur('name')}
+          error={touched.name ? errors.name : undefined}
+          placeholder="Select domain type..."
+          options={DOMAIN_OPTIONS.map(option => ({
+            value: option.value,
+            label: option.label,
+          }))}
+          disabled={mode === 'edit'} // Don't allow changing domain type when editing
+        />
+        
+        {selectedDomainOption && (
+          <div className="mt-2 p-3 bg-primary-50 border border-primary-200 rounded-md">
+            <p className="text-sm text-primary-700">
+              {selectedDomainOption.description}
+            </p>
+          </div>
+        )}
+        
+        {mode === 'edit' && (
+          <p className="mt-1 text-xs text-secondary-500">
+            Domain type cannot be changed after creation
+          </p>
+        )}
+      </div>
 
       {/* Description */}
       <div>
         <label className="block text-sm font-medium text-secondary-700 mb-2">
-          Description <span className="text-error-500">*</span>
+          Description *
         </label>
         <textarea
-          {...register('description')}
+          value={formData.description}
+          onChange={(e) => handleInputChange('description', e.target.value)}
+          onBlur={() => handleBlur('description')}
+          placeholder="Describe the purpose and scope of this domain..."
           rows={4}
-          className="w-full rounded-md border border-secondary-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
-          placeholder="Describe the domain's purpose, scope, and included systems..."
+          className={`
+            w-full px-3 py-2 border rounded-md shadow-sm placeholder-secondary-400
+            focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500
+            ${touched.description && errors.description
+              ? 'border-error-300 focus:ring-error-500 focus:border-error-500'
+              : 'border-secondary-300'
+            }
+          `}
         />
-        {errors.description && (
-          <p className="mt-1 text-sm text-error-600">{errors.description.message}</p>
+        {touched.description && errors.description && (
+          <p className="mt-1 text-sm text-error-600">{errors.description}</p>
         )}
         <p className="mt-1 text-xs text-secondary-500">
-          Provide a detailed description of what this domain encompasses, including specific 
-          equipment, systems, and operational areas.
+          {formData.description.length}/500 characters
         </p>
       </div>
 
-      {/* Domain Type Information */}
-      <div className="rounded-md bg-primary-50 border border-primary-200 p-4">
-        <h4 className="text-sm font-medium text-primary-800 mb-2">
-          {domainTypeOptions.find(opt => opt.value === selectedDomainType)?.label} Domain
-        </h4>
-        <p className="text-sm text-primary-700">
-          {domainTypeOptions.find(opt => opt.value === selectedDomainType)?.description}
-        </p>
-        <div className="mt-3 text-xs text-primary-600">
-          <strong>Security Considerations:</strong>
-          <ul className="mt-1 list-disc list-inside space-y-1">
-            {selectedDomainType === DomainType.MFG && (
-              <>
-                <li>Manufacturing zones require MFZ_SL4 security level</li>
-                <li>Production systems must be isolated from office networks</li>
-                <li>Real-time communication protocols need dedicated VLANs</li>
-              </>
-            )}
-            {selectedDomainType === DomainType.LOG && (
-              <>
-                <li>Logistics zones require LOG_SL4 security level</li>
-                <li>Warehouse systems need segregated network access</li>
-                <li>RFID and tracking systems require dedicated subnets</li>
-              </>
-            )}
-            {selectedDomainType === DomainType.FCM && (
-              <>
-                <li>Facility zones require FMZ_SL4 security level</li>
-                <li>Building systems need controlled network access</li>
-                <li>Camera systems require high-bandwidth dedicated VLANs</li>
-              </>
-            )}
-            {selectedDomainType === DomainType.ENG && (
-              <>
-                <li>Engineering zones require ENG_SL4 security level</li>
-                <li>Test systems need isolated development networks</li>
-                <li>Measurement devices require precise timing networks</li>
-              </>
-            )}
-          </ul>
+      {/* Compliance Notice */}
+      <div className="bg-warning-50 border border-warning-200 rounded-md p-4">
+        <div className="flex">
+          <div className="flex-shrink-0">
+            <svg
+              className="h-5 w-5 text-warning-400"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </div>
+          <div className="ml-3">
+            <h3 className="text-sm font-medium text-warning-800">
+              Bosch Rexroth Compliance
+            </h3>
+            <div className="mt-2 text-sm text-warning-700">
+              <p>
+                This domain configuration must comply with Bosch Rexroth IT/OT 
+                security policies and network segmentation requirements. All 
+                associated VLANs and IP allocations will inherit the security 
+                classification of this domain.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Form Actions */}
-      <div className="flex justify-end space-x-3 pt-4 border-t border-secondary-200">
+      <div className="flex items-center justify-end space-x-3 pt-6 border-t border-secondary-200">
         <Button
           type="button"
           variant="outline"
@@ -201,7 +256,6 @@ const DomainForm: React.FC<DomainFormProps> = ({ domain, onCancel, mode }) => {
         <Button
           type="submit"
           loading={loading}
-          disabled={!isValid}
         >
           {mode === 'create' ? 'Create Domain' : 'Update Domain'}
         </Button>
@@ -209,5 +263,3 @@ const DomainForm: React.FC<DomainFormProps> = ({ domain, onCancel, mode }) => {
     </form>
   );
 };
-
-export { DomainForm };

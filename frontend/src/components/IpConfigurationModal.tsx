@@ -201,6 +201,7 @@ export const IpConfigurationModal: React.FC<IpConfigurationModalProps> = ({
   };
 
   const getStatusColor = (status: string) => {
+    if (!status) return 'secondary';
     switch (status) {
       case 'active': return 'success';
       case 'inactive': return 'secondary';
@@ -256,7 +257,7 @@ export const IpConfigurationModal: React.FC<IpConfigurationModalProps> = ({
       header: 'Status',
       render: (device: IpDevice) => (
         <Badge variant={getStatusColor(device.status)} size="sm">
-          {device.status.toUpperCase()}
+          {device.status ? device.status.toUpperCase() : 'UNKNOWN'}
         </Badge>
       ),
     },

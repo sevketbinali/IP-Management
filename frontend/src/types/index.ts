@@ -1,38 +1,16 @@
 /**
- * Core Type Definitions for IP Management System
- * Industrial-grade network management for IT/OT environments
+ * Type Definitions for IP Management System
+ * Comprehensive type definitions for industrial network management
  */
 
 // Domain Types
 export enum DomainType {
   MFG = 'MFG',
-  LOG = 'LOG',
+  LOG = 'LOG', 
   FCM = 'FCM',
   ENG = 'ENG',
 }
 
-export enum SecurityLevel {
-  SL3 = 'SL3',
-  MFZ_SL4 = 'MFZ_SL4',
-  LOG_SL4 = 'LOG_SL4',
-  FMZ_SL4 = 'FMZ_SL4',
-  ENG_SL4 = 'ENG_SL4',
-  LRSZ_SL4 = 'LRSZ_SL4',
-  RSZ_SL4 = 'RSZ_SL4',
-}
-
-export enum IPAllocationStatus {
-  ALLOCATED = 'ALLOCATED',
-  AVAILABLE = 'AVAILABLE',
-  RESERVED = 'RESERVED',
-}
-
-export enum AllocationType {
-  MANUAL = 'MANUAL',
-  AUTOMATIC = 'AUTOMATIC',
-}
-
-// Core Entity Interfaces
 export interface Domain {
   id: string;
   name: DomainType;
@@ -42,197 +20,51 @@ export interface Domain {
   updatedAt: string;
 }
 
-export interface ValueStream {
-  id: string;
-  name: string;
-  domainId: string;
-  domainName: string;
-  description?: string;
-  zoneCount: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Zone {
-  id: string;
-  name: string;
-  securityLevel: SecurityLevel;
-  valueStreamId: string;
-  valueStreamName: string;
-  manager: string;
-  vlanCount: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface VLAN {
-  id: string;
-  vlanId: number;
-  subnet: string;
-  subnetMask: number;
-  defaultGateway: string;
-  networkStart: string;
-  networkEnd: string;
-  zoneId: string;
-  zoneName: string;
-  zoneManager: string;
-  lastFirewallCheck: string | null;
-  firewall: string;
-  ipAllocationCount: number;
-  availableIpCount: number;
-  reservedIpCount: number;
-  totalIpCount: number;
-  utilizationPercentage: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface IPAllocation {
-  id: string;
-  vlanId: string;
-  vlanName: string;
-  ciName: string;
-  macAddress: string;
-  ipAddress: string;
-  description: string;
-  allocationType: AllocationType;
-  status: IPAllocationStatus;
-  isReserved: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-// Form Data Interfaces
 export interface DomainFormData {
   name: DomainType;
   description: string;
 }
 
-export interface ValueStreamFormData {
-  name: string;
+// VLAN Types
+export interface Vlan {
+  id: string;
   domainId: string;
-  description?: string;
-}
-
-export interface ZoneFormData {
-  name: string;
-  securityLevel: SecurityLevel;
-  valueStreamId: string;
-  manager: string;
-}
-
-export interface VLANFormData {
   vlanId: number;
+  name: string;
   subnet: string;
-  subnetMask: number;
-  defaultGateway: string;
-  zoneId: string;
+  subnetMask: string;
+  gateway: string;
+  netStart: string;
+  netEnd: string;
+  zoneName: string;
   zoneManager: string;
-  firewall: string;
-  lastFirewallCheck?: string;
+  securityType: string;
+  status: 'active' | 'inactive' | 'warning' | 'error';
+  utilization: number;
+  totalIps: number;
+  usedIps: number;
+  lastFirewallCheck: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface IPAllocationFormData {
+// IP Device Types
+export interface IpDevice {
+  id: string;
+  vlanId: string;
+  ipAddress: string;
   ciName: string;
   macAddress: string;
-  ipAddress?: string; // Optional for automatic allocation
   description: string;
-  allocationType: AllocationType;
+  status: 'active' | 'inactive' | 'reserved' | 'conflict';
+  deviceType: string;
+  lastSeen: string;
+  isReserved: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
-// API Response Types
-export interface APIResponse<T> {
-  data: T;
-  message?: string;
-  errors?: string[];
-  meta?: {
-    pagination?: PaginationMeta;
-  };
-}
-
-export interface PaginationMeta {
-  page: number;
-  pageSize: number;
-  total: number;
-  totalPages: number;
-}
-
-export interface APIError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-  timestamp: string;
-  requestId?: string;
-}
-
-// UI State Types
-export interface PaginationState {
-  page: number;
-  pageSize: number;
-  total: number;
-}
-
-export interface FilterState {
-  search?: string;
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
-  [key: string]: unknown;
-}
-
-export interface LoadingState {
-  isLoading: boolean;
-  error: string | null;
-}
-
-// Hierarchy Navigation Types
-export interface HierarchyNode {
-  id: string;
-  name: string;
-  type: 'domain' | 'valueStream' | 'zone' | 'vlan';
-  children: HierarchyNode[];
-  metadata: {
-    securityLevel?: string;
-    manager?: string;
-    ipCount?: number;
-    vlanCount?: number;
-    utilizationPercentage?: number;
-  };
-}
-
-// Network Calculation Types
-export interface IPRange {
-  start: string;
-  end: string;
-  type: 'reserved' | 'available' | 'allocated';
-  count: number;
-}
-
-export interface SubnetInfo {
-  subnet: string;
-  subnetMask: number;
-  networkAddress: string;
-  broadcastAddress: string;
-  firstUsableIP: string;
-  lastUsableIP: string;
-  totalIPs: number;
-  usableIPs: number;
-  reservedIPs: string[];
-}
-
-// Health and System Status
-export interface HealthStatus {
-  status: 'healthy' | 'degraded' | 'unhealthy';
-  service: string;
-  version: string;
-  timestamp: string;
-  checks: {
-    database: boolean;
-    cache: boolean;
-    api: boolean;
-  };
-}
-
-// User and Authentication
+// User and Authentication Types
 export interface User {
   id: string;
   username: string;
@@ -250,82 +82,146 @@ export interface AuthState {
   error: string | null;
 }
 
-// Component Props Types
-export interface TableColumn<T> {
-  key: keyof T;
-  title: string;
-  render?: (value: unknown, record: T) => React.ReactNode;
-  sortable?: boolean;
-  filterable?: boolean;
-  width?: string;
-  className?: string;
+// System Health Types
+export interface HealthStatus {
+  status: 'healthy' | 'degraded' | 'unhealthy';
+  service: string;
+  version: string;
+  timestamp: string;
+  checks: {
+    database: boolean;
+    cache: boolean;
+    api: boolean;
+  };
 }
 
-export interface TableProps<T> {
+// UI State Types
+export interface PaginationState {
+  page: number;
+  pageSize: number;
+  total: number;
+}
+
+export interface FilterState {
+  search: string;
+  sortBy: string;
+  sortOrder: 'asc' | 'desc';
+}
+
+// Table Component Types
+export interface TableColumn<T = any> {
+  key: string;
+  title: string;
+  sortable?: boolean;
+  width?: string | number;
+  className?: string;
+  render?: (value: any, record: T) => React.ReactNode;
+}
+
+export interface TablePagination {
+  current: number;
+  pageSize: number;
+  total: number;
+  onChange: (page: number, pageSize: number) => void;
+}
+
+export interface TableActions<T = any> {
+  onEdit?: (record: T) => void;
+  onDelete?: (record: T) => void;
+  onView?: (record: T) => void;
+  onCreate?: () => void;
+}
+
+export interface TableSelection {
+  selectedRowKeys: string[];
+  onChange: (selectedRowKeys: string[]) => void;
+}
+
+export interface TableProps<T = any> {
   data: T[];
   columns: TableColumn<T>[];
   loading?: boolean;
-  pagination?: {
-    current: number;
-    pageSize: number;
-    total: number;
-    onChange: (page: number, pageSize: number) => void;
+  pagination?: TablePagination;
+  selection?: TableSelection;
+  actions?: TableActions<T>;
+  emptyMessage?: string;
+}
+
+// API Response Types
+export interface ApiResponse<T> {
+  data: T;
+  meta?: {
+    pagination?: {
+      page: number;
+      pageSize: number;
+      total: number;
+    };
   };
-  selection?: {
-    selectedRowKeys: string[];
-    onChange: (selectedRowKeys: string[]) => void;
-  };
-  actions?: {
-    onCreate?: () => void;
-    onEdit?: (record: T) => void;
-    onDelete?: (record: T) => void;
-    onView?: (record: T) => void;
-  };
+  message?: string;
 }
 
-// Form Component Types
-export interface FormFieldProps {
-  label: string;
-  name: string;
-  error?: string;
-  required?: boolean;
-  disabled?: boolean;
-  className?: string;
-}
-
-export interface InputFieldProps extends FormFieldProps {
-  type?: 'text' | 'email' | 'password' | 'number';
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  maxLength?: number;
-  pattern?: string;
-}
-
-export interface SelectFieldProps extends FormFieldProps {
-  value: string;
-  onChange: (value: string) => void;
-  options: Array<{ value: string; label: string; disabled?: boolean }>;
-  placeholder?: string;
-}
-
-// Notification Types
-export interface NotificationOptions {
-  type: 'success' | 'error' | 'warning' | 'info';
-  title: string;
+export interface ApiError {
   message: string;
-  duration?: number;
-  persistent?: boolean;
+  code?: string;
+  details?: any;
 }
 
-// Environment Configuration
-export interface AppConfig {
-  apiUrl: string;
-  plantCode: string;
-  organization: string;
-  apiTimeout: number;
-  cacheDuration: number;
-  paginationSize: number;
-  enableDebug: boolean;
-  enableAnalytics: boolean;
+// Form Types
+export interface FormField {
+  name: string;
+  label: string;
+  type: 'text' | 'email' | 'password' | 'number' | 'select' | 'textarea';
+  required?: boolean;
+  placeholder?: string;
+  options?: { value: string; label: string }[];
+  validation?: {
+    min?: number;
+    max?: number;
+    pattern?: RegExp;
+    message?: string;
+  };
+}
+
+// Network Types
+export interface NetworkSegment {
+  id: string;
+  name: string;
+  subnet: string;
+  vlanId: number;
+  securityLevel: string;
+  deviceCount: number;
+}
+
+export interface SecurityZone {
+  id: string;
+  name: string;
+  type: string;
+  description: string;
+  securityLevel: 'SL3' | 'SL4';
+  restrictions: string[];
+}
+
+// Utility Types
+export type DeepPartial<T> = {
+  [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
+};
+
+export type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+
+export type RequiredFields<T, K extends keyof T> = T & Required<Pick<T, K>>;
+
+// Component Props Types
+export interface BaseComponentProps {
+  className?: string;
+  children?: React.ReactNode;
+}
+
+export interface LoadingProps {
+  loading?: boolean;
+  loadingText?: string;
+}
+
+export interface ErrorProps {
+  error?: string | null;
+  onErrorClear?: () => void;
 }

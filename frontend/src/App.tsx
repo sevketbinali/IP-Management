@@ -1,6 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import { SimpleDashboard } from '@/components/SimpleDashboard';
+import { DomainVlanView } from '@/components/DomainVlanView';
+import { DomainManagement } from '@/components/DomainManagement';
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component<
@@ -59,32 +62,8 @@ const App: React.FC = () => {
         <div className="min-h-screen bg-gray-50">
           <Routes>
             <Route path="/" element={<SimpleDashboard />} />
-            <Route path="/domains" element={
-              <div className="p-6">
-                <h1 className="text-2xl font-bold text-gray-900 mb-4">Domain Management</h1>
-                <div className="bg-white p-6 rounded-lg shadow">
-                  <p className="text-gray-600 mb-4">Manage business domains (MFG, LOG, FCM, ENG)</p>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between p-3 border rounded">
-                      <span className="font-medium">MFG - Manufacturing</span>
-                      <span className="text-sm text-gray-500">3 Value Streams</span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 border rounded">
-                      <span className="font-medium">LOG - Logistics</span>
-                      <span className="text-sm text-gray-500">1 Value Stream</span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 border rounded">
-                      <span className="font-medium">FCM - Facility</span>
-                      <span className="text-sm text-gray-500">2 Value Streams</span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 border rounded">
-                      <span className="font-medium">ENG - Engineering</span>
-                      <span className="text-sm text-gray-500">1 Value Stream</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            } />
+            <Route path="/domains" element={<DomainManagement />} />
+            <Route path="/domains/:domainId" element={<DomainVlanView />} />
             <Route path="/vlans" element={
               <div className="p-6">
                 <h1 className="text-2xl font-bold text-gray-900 mb-4">VLAN Management</h1>
@@ -131,6 +110,16 @@ const App: React.FC = () => {
             } />
             <Route path="*" element={<SimpleDashboard />} />
           </Routes>
+          <Toaster 
+            position="top-right"
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: '#363636',
+                color: '#fff',
+              },
+            }}
+          />
         </div>
       </Router>
     </ErrorBoundary>
