@@ -160,21 +160,21 @@ async def create_sample_data():
             {"vlan": "VLAN_102", "ip": "10.1.2.11", "mac": "00:1B:21:A4:01:02", "ci_name": "HMI-A4-OP1", "description": "Operator Panel 1 - Line A4"},
             
             # Logistics devices
-            {"vlan": "VLAN_201", "ip": "10.2.1.10", "mac": "00:1B:21:LOG:01:01", "ci_name": "WMS-LOG21-SRV", "description": "Warehouse Management Server"},
-            {"vlan": "VLAN_201", "ip": "10.2.1.11", "mac": "00:1B:21:LOG:01:02", "ci_name": "AGV-LOG21-001", "description": "Automated Guided Vehicle 001"},
+            {"vlan": "VLAN_201", "ip": "10.2.1.10", "mac": "00:1B:21:20:01:01", "ci_name": "WMS-LOG21-SRV", "description": "Warehouse Management Server"},
+            {"vlan": "VLAN_201", "ip": "10.2.1.11", "mac": "00:1B:21:20:01:02", "ci_name": "AGV-LOG21-001", "description": "Automated Guided Vehicle 001"},
             
             # Facility devices
-            {"vlan": "VLAN_301", "ip": "10.3.1.10", "mac": "00:1B:21:FCM:01:01", "ci_name": "ANALYZER-QC-001", "description": "Quality Control Analyzer 001"},
-            {"vlan": "VLAN_302", "ip": "10.3.2.10", "mac": "00:1B:21:FCM:02:01", "ci_name": "CAMERA-SEC-001", "description": "Security Camera - Main Entrance"},
-            {"vlan": "VLAN_302", "ip": "10.3.2.11", "mac": "00:1B:21:FCM:02:02", "ci_name": "CAMERA-SEC-002", "description": "Security Camera - Production Floor"},
+            {"vlan": "VLAN_301", "ip": "10.3.1.10", "mac": "00:1B:21:30:01:01", "ci_name": "ANALYZER-QC-001", "description": "Quality Control Analyzer 001"},
+            {"vlan": "VLAN_302", "ip": "10.3.2.10", "mac": "00:1B:21:30:02:01", "ci_name": "CAMERA-SEC-001", "description": "Security Camera - Main Entrance"},
+            {"vlan": "VLAN_302", "ip": "10.3.2.11", "mac": "00:1B:21:30:02:02", "ci_name": "CAMERA-SEC-002", "description": "Security Camera - Production Floor"},
             
             # Engineering devices
-            {"vlan": "VLAN_401", "ip": "10.4.1.10", "mac": "00:1B:21:ENG:01:01", "ci_name": "TESTBENCH-TB001", "description": "Hydraulic Test Bench 001"},
+            {"vlan": "VLAN_401", "ip": "10.4.1.10", "mac": "00:1B:21:40:01:01", "ci_name": "TESTBENCH-TB001", "description": "Hydraulic Test Bench 001"},
             
             # Restricted zone devices
-            {"vlan": "VLAN_501", "ip": "10.5.1.10", "mac": "00:1B:21:MES:01:01", "ci_name": "NEXEED-MES-SRV", "description": "Nexeed MES Server"},
-            {"vlan": "VLAN_502", "ip": "10.5.2.10", "mac": "00:1B:21:SQL:01:01", "ci_name": "SQL-DB-PRIMARY", "description": "Primary SQL Database Server"},
-            {"vlan": "VLAN_503", "ip": "10.5.3.10", "mac": "00:1B:21:DCK:01:01", "ci_name": "DOCKER-HOST-001", "description": "Docker Container Host 001"}
+            {"vlan": "VLAN_501", "ip": "10.5.1.10", "mac": "00:1B:21:50:01:01", "ci_name": "NEXEED-MES-SRV", "description": "Nexeed MES Server"},
+            {"vlan": "VLAN_502", "ip": "10.5.2.10", "mac": "00:1B:21:50:02:01", "ci_name": "SQL-DB-PRIMARY", "description": "Primary SQL Database Server"},
+            {"vlan": "VLAN_503", "ip": "10.5.3.10", "mac": "00:1B:21:50:03:01", "ci_name": "DOCKER-HOST-001", "description": "Docker Container Host 001"}
         ]
         
         for ip_data in ip_assignments_data:
