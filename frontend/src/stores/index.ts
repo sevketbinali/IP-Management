@@ -8,7 +8,3 @@ export { useAppStore } from './useAppStore';
 export { useDomainStore } from './useDomainStore';
 export { useIpStore } from './useIPStore';
 export { useVlanStore } from './useVLANStore';
-
-// Type exports
-export type { AppState } from './useAppStore';
-export type { DomainState } from './useDomainStore';
