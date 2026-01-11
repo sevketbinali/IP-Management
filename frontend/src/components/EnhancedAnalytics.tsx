@@ -6,13 +6,20 @@
 import React, { useState, useEffect } from 'react';
 import {
   ChartBarIcon,
-  DocumentChartBarIcon,
   ArrowDownTrayIcon,
   ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
   ClockIcon,
+  ComputerDesktopIcon,
+  GlobeAltIcon,
+  BuildingOfficeIcon,
+  ServerIcon,
+  WrenchScrewdriverIcon,
+  TruckIcon,
+  BuildingOffice2Icon,
+  BeakerIcon,
 } from '@heroicons/react/24/outline';
 import { cn } from '@/utils';
 
@@ -30,7 +37,7 @@ interface ChartData {
   datasets: {
     label: string;
     data: number[];
-    backgroundColor?: string;
+    backgroundColor?: string | string[];
     borderColor?: string;
     fill?: boolean;
   }[];
@@ -47,27 +54,48 @@ interface ComplianceMetric {
 const EnhancedAnalytics: React.FC = () => {
   const [timeRange, setTimeRange] = useState('7d');
   const [loading, setLoading] = useState(true);
-
-  // Mock data
   const [metrics, setMetrics] = useState<MetricCard[]>([]);
   const [utilizationData, setUtilizationData] = useState<ChartData | null>(null);
   const [deviceGrowthData, setDeviceGrowthData] = useState<ChartData | null>(null);
   const [complianceData, setComplianceData] = useState<ComplianceMetric[]>([]);
+
+  // Domain icon mapping
+  const getDomainIcon = (domainCode: string) => {
+    switch (domainCode?.toUpperCase()) {
+      case 'MFG': return WrenchScrewdriverIcon;
+      case 'LOG': return TruckIcon;
+      case 'FCM': return BuildingOffice2Icon;
+      case 'ENG': return BeakerIcon;
+      default: return BuildingOfficeIcon;
+    }
+  };
+
+  const getDomainColor = (domainCode: string) => {
+    switch (domainCode?.toUpperCase()) {
+      case 'MFG': return 'text-blue-600 bg-blue-100';
+      case 'LOG': return 'text-green-600 bg-green-100';
+      case 'FCM': return 'text-purple-600 bg-purple-100';
+      case 'ENG': return 'text-orange-600 bg-orange-100';
+      default: return 'text-gray-600 bg-gray-100';
+    }
+  };
+
+  const getDomainName = (domainCode: string) => {
+    switch (domainCode?.toUpperCase()) {
+      case 'MFG': return 'Manufacturing';
+      case 'LOG': return 'Logistics';
+      case 'FCM': return 'Facility';
+      case 'ENG': return 'Engineering';
+      default: return domainCode;
+    }
+  };
 
   useEffect(() => {
     // Simulate data loading
     setTimeout(() => {
       const mockMetrics: MetricCard[] = [
         {
-          title: 'IP Utilization',
-          value: '72%',
-          change: 5.2,
-          trend: 'up',
-          icon: ChartBarIcon,
-          color: 'blue',
-        },
-        {
-          title: 'Active Devices',
+          title: 'Aktif OT Cihazları',
           value: 1247,
           change: 12.3,
           trend: 'up',
@@ -75,51 +103,59 @@ const EnhancedAnalytics: React.FC = () => {
           color: 'green',
         },
         {
-          title: 'Network Segments',
-          value: 24,
-          change: 0,
-          trend: 'stable',
-          icon: DocumentChartBarIcon,
+          title: 'Kayıtlı OT Cihazları',
+          value: 1389,
+          change: 5.2,
+          trend: 'up',
+          icon: ComputerDesktopIcon,
+          color: 'blue',
+        },
+        {
+          title: 'Aktif IP Adresleri',
+          value: 892,
+          change: 8.7,
+          trend: 'up',
+          icon: GlobeAltIcon,
           color: 'purple',
         },
         {
-          title: 'Compliance Score',
-          value: '94%',
-          change: -2.1,
+          title: 'Toplam Domain Sayısı',
+          value: 4,
+          change: 0,
+          trend: 'stable',
+          icon: BuildingOfficeIcon,
+          color: 'indigo',
+        },
+        {
+          title: 'Toplam VLAN Sayısı',
+          value: 13,
+          change: 15.4,
+          trend: 'up',
+          icon: ServerIcon,
+          color: 'emerald',
+        },
+        {
+          title: 'Bilinmeyen Cihazlar',
+          value: 142,
+          change: -23.4,
           trend: 'down',
           icon: ExclamationTriangleIcon,
           color: 'yellow',
         },
-        {
-          title: 'Response Time',
-          value: '45ms',
-          change: -8.7,
-          trend: 'down',
-          icon: ClockIcon,
-          color: 'indigo',
-        },
-        {
-          title: 'Conflicts Resolved',
-          value: 156,
-          change: 23.4,
-          trend: 'up',
-          icon: CheckCircleIcon,
-          color: 'emerald',
-        },
       ];
 
       const mockUtilizationData: ChartData = {
-        labels: ['Manufacturing', 'Logistics', 'Facility', 'Engineering', 'Security'],
+        labels: ['MFG', 'LOG', 'FCM', 'ENG', 'SL3'],
         datasets: [
           {
-            label: 'IP Utilization %',
+            label: 'IP Kullanım %',
             data: [78, 45, 89, 32, 67],
             backgroundColor: [
-              'rgba(59, 130, 246, 0.8)',
-              'rgba(16, 185, 129, 0.8)',
-              'rgba(245, 158, 11, 0.8)',
-              'rgba(139, 92, 246, 0.8)',
-              'rgba(239, 68, 68, 0.8)',
+              'rgba(59, 130, 246, 0.8)',   // MFG - Blue
+              'rgba(16, 185, 129, 0.8)',   // LOG - Green  
+              'rgba(139, 92, 246, 0.8)',   // FCM - Purple
+              'rgba(245, 158, 11, 0.8)',   // ENG - Orange
+              'rgba(107, 114, 128, 0.8)',  // SL3 - Gray
             ],
           },
         ],
@@ -147,32 +183,32 @@ const EnhancedAnalytics: React.FC = () => {
 
       const mockComplianceData: ComplianceMetric[] = [
         {
-          domain: 'Manufacturing',
+          domain: 'MFG',
           securityLevel: 'MFZ_SL4',
           compliant: 45,
           total: 48,
-          issues: ['Outdated firmware on 3 devices'],
+          issues: ['3 cihazda güncel olmayan firmware'],
         },
         {
-          domain: 'Logistics',
+          domain: 'LOG',
           securityLevel: 'LOG_SL4',
           compliant: 28,
           total: 28,
           issues: [],
         },
         {
-          domain: 'Facility',
+          domain: 'FCM',
           securityLevel: 'FMZ_SL4',
           compliant: 12,
           total: 15,
-          issues: ['Missing security certificates', 'Unauthorized device detected'],
+          issues: ['Eksik güvenlik sertifikaları', 'Yetkisiz cihaz tespit edildi'],
         },
         {
-          domain: 'Engineering',
+          domain: 'ENG',
           securityLevel: 'ENG_SL4',
           compliant: 18,
           total: 20,
-          issues: ['Test devices in production network'],
+          issues: ['Test cihazları üretim ağında'],
         },
       ];
 
@@ -321,8 +357,8 @@ const EnhancedAnalytics: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Analytics & Reports</h2>
-          <p className="text-gray-600">Network performance metrics and compliance analytics</p>
+          <h2 className="text-2xl font-bold text-gray-900">Analitik & Raporlar</h2>
+          <p className="text-gray-600">Ağ performans metrikleri ve uyumluluk analitiği</p>
         </div>
         <div className="flex items-center space-x-3">
           <select
@@ -391,7 +427,7 @@ const EnhancedAnalytics: React.FC = () => {
         {/* IP Utilization Chart */}
         <div className="bg-white shadow rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-medium text-gray-900">IP Utilization by Domain</h3>
+            <h3 className="text-lg font-medium text-gray-900">Domain Bazında IP Kullanımı</h3>
             <ChartBarIcon className="h-5 w-5 text-gray-400" />
           </div>
           {loading ? (
@@ -406,7 +442,7 @@ const EnhancedAnalytics: React.FC = () => {
         {/* Device Growth Chart */}
         <div className="bg-white shadow rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-medium text-gray-900">Device Growth Trend</h3>
+            <h3 className="text-lg font-medium text-gray-900">Cihaz Büyüme Trendi</h3>
             <ArrowTrendingUpIcon className="h-5 w-5 text-gray-400" />
           </div>
           {loading ? (
@@ -422,7 +458,7 @@ const EnhancedAnalytics: React.FC = () => {
       {/* Compliance Table */}
       <div className="bg-white shadow rounded-lg">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">Security Compliance by Domain</h3>
+          <h3 className="text-lg font-medium text-gray-900">Domain Bazında Güvenlik Uyumluluğu</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -432,16 +468,16 @@ const EnhancedAnalytics: React.FC = () => {
                   Domain
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Security Level
+                  Güvenlik Seviyesi
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Compliance
+                  Uyumluluk
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Issues
+                  Sorunlar
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
+                  Durum
                 </th>
               </tr>
             </thead>
@@ -451,7 +487,21 @@ const EnhancedAnalytics: React.FC = () => {
                 return (
                   <tr key={item.domain} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{item.domain}</div>
+                      <div className="flex items-center">
+                        <div className={cn(
+                          'h-8 w-8 rounded-lg flex items-center justify-center mr-3',
+                          getDomainColor(item.domain)
+                        )}>
+                          {(() => {
+                            const DomainIcon = getDomainIcon(item.domain);
+                            return <DomainIcon className="h-4 w-4" />;
+                          })()}
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">{getDomainName(item.domain)}</div>
+                          <div className="text-xs text-gray-500">{item.domain}</div>
+                        </div>
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
@@ -478,7 +528,7 @@ const EnhancedAnalytics: React.FC = () => {
                     <td className="px-6 py-4">
                       <div className="text-sm text-gray-900">
                         {item.issues.length === 0 ? (
-                          <span className="text-green-600">No issues</span>
+                          <span className="text-green-600">Sorun yok</span>
                         ) : (
                           <ul className="list-disc list-inside space-y-1">
                             {item.issues.map((issue, index) => (
@@ -497,17 +547,17 @@ const EnhancedAnalytics: React.FC = () => {
                         {complianceRate >= 95 ? (
                           <>
                             <CheckCircleIcon className="h-3 w-3 mr-1" />
-                            Compliant
+                            Uyumlu
                           </>
                         ) : complianceRate >= 80 ? (
                           <>
                             <ExclamationTriangleIcon className="h-3 w-3 mr-1" />
-                            Warning
+                            Uyarı
                           </>
                         ) : (
                           <>
                             <ExclamationTriangleIcon className="h-3 w-3 mr-1" />
-                            Non-compliant
+                            Uyumsuz
                           </>
                         )}
                       </span>
@@ -525,34 +575,34 @@ const EnhancedAnalytics: React.FC = () => {
         <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-6 text-white">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-blue-100">Network Health Score</p>
-              <p className="text-3xl font-bold">87%</p>
+              <p className="text-blue-100">OT Cihaz Kapsamı</p>
+              <p className="text-3xl font-bold">89%</p>
             </div>
-            <ChartBarIcon className="h-12 w-12 text-blue-200" />
+            <CheckCircleIcon className="h-12 w-12 text-blue-200" />
           </div>
-          <p className="text-blue-100 text-sm mt-2">Based on utilization, performance, and compliance metrics</p>
+          <p className="text-blue-100 text-sm mt-2">Kayıtlı cihazların aktif olanları</p>
         </div>
 
         <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-6 text-white">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-green-100">Automation Rate</p>
-              <p className="text-3xl font-bold">94%</p>
+              <p className="text-green-100">IP Kullanım Verimliliği</p>
+              <p className="text-3xl font-bold">72%</p>
             </div>
-            <CheckCircleIcon className="h-12 w-12 text-green-200" />
+            <GlobeAltIcon className="h-12 w-12 text-green-200" />
           </div>
-          <p className="text-green-100 text-sm mt-2">IP assignments handled automatically</p>
+          <p className="text-green-100 text-sm mt-2">Tahsis edilen IP'lerin kullanım oranı</p>
         </div>
 
         <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg p-6 text-white">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-purple-100">Cost Savings</p>
-              <p className="text-3xl font-bold">€12.4K</p>
+              <p className="text-purple-100">Network Segmentasyonu</p>
+              <p className="text-3xl font-bold">13</p>
             </div>
-            <ArrowTrendingDownIcon className="h-12 w-12 text-purple-200" />
+            <ServerIcon className="h-12 w-12 text-purple-200" />
           </div>
-          <p className="text-purple-100 text-sm mt-2">Monthly operational cost reduction</p>
+          <p className="text-purple-100 text-sm mt-2">Aktif VLAN segmentleri</p>
         </div>
       </div>
     </div>

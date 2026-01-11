@@ -13,7 +13,6 @@ import {
   ExclamationTriangleIcon,
   CheckCircleIcon,
 } from '@heroicons/react/24/outline';
-import { Layout } from './Layout';
 import { useDomainStore } from '@/stores/useDomainStore';
 import { useVlanStore } from '@/stores/useVLANStore';
 import { useIpStore } from '@/stores/useIPStore';
@@ -57,35 +56,56 @@ const DomainVlanView: React.FC = () => {
 
   if (loading) {
     return (
-      <Layout>
-        <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <span className="ml-3 text-gray-600">Domain bilgileri yükleniyor...</span>
-        </div>
-      </Layout>
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span className="ml-3 text-gray-600">Domain bilgileri yükleniyor...</span>
+      </div>
     );
   }
 
   if (!selectedDomain) {
     return (
-      <Layout>
-        <div className="text-center py-12">
-          <h3 className="text-lg font-medium text-gray-900">Domain bulunamadı</h3>
-          <p className="mt-2 text-gray-500">Belirtilen domain mevcut değil.</p>
-          <Link
-            to="/domains"
-            className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-          >
-            Domain Listesine Dön
-          </Link>
+      <div className="max-w-4xl mx-auto px-4 py-12">
+        <div className="text-center bg-white rounded-lg shadow-lg p-8">
+          <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
+            <ExclamationTriangleIcon className="h-8 w-8 text-red-600" />
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">Domain Bulunamadı</h3>
+          <p className="text-gray-600 mb-6">
+            Aradığınız domain ({domainId}) sistemde mevcut değil veya erişim izniniz bulunmuyor.
+          </p>
+          <div className="space-y-4">
+            <div className="text-sm text-gray-500">
+              <p>Olası nedenler:</p>
+              <ul className="mt-2 list-disc list-inside space-y-1">
+                <li>Domain silinmiş veya taşınmış olabilir</li>
+                <li>URL'de yazım hatası bulunuyor olabilir</li>
+                <li>Bu domain için yetkiniz bulunmuyor olabilir</li>
+              </ul>
+            </div>
+            <div className="flex justify-center space-x-4">
+              <Link
+                to="/domains"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <ArrowLeftIcon className="h-4 w-4 mr-2" />
+                Domain Listesine Dön
+              </Link>
+              <Link
+                to="/"
+                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Ana Sayfaya Git
+              </Link>
+            </div>
+          </div>
         </div>
-      </Layout>
+      </div>
     );
   }
 
   return (
-    <Layout>
-      <div className="space-y-6">
+    <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -435,7 +455,6 @@ const DomainVlanView: React.FC = () => {
           </div>
         </div>
       </div>
-    </Layout>
   );
 };
 

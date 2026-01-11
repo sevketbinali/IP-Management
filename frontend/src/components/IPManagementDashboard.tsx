@@ -13,17 +13,40 @@ import {
   CheckCircleIcon,
   ClockIcon,
   PlusIcon,
-  MagnifyingGlassIcon,
-  FunnelIcon,
   ArrowPathIcon,
   ChartBarIcon,
+  WrenchScrewdriverIcon,
+  TruckIcon,
+  BuildingOffice2Icon,
+  BeakerIcon,
+  BuildingOfficeIcon,
 } from '@heroicons/react/24/outline';
-import { Layout } from './Layout';
 import { useDomainStore } from '@/stores/useDomainStore';
 import { useVlanStore } from '@/stores/useVLANStore';
 import { useIpStore } from '@/stores/useIPStore';
 import { useAppStore } from '@/stores/useAppStore';
 import { cn, formatDateTime } from '@/utils';
+
+// Domain icon mapping
+const getDomainIcon = (domainCode: string) => {
+  switch (domainCode?.toUpperCase()) {
+    case 'MFG': return WrenchScrewdriverIcon; // Manufacturing
+    case 'LOG': return TruckIcon; // Logistics  
+    case 'FCM': return BuildingOffice2Icon; // Facility
+    case 'ENG': return BeakerIcon; // Engineering
+    default: return BuildingOfficeIcon;
+  }
+};
+
+const getDomainColor = (domainCode: string) => {
+  switch (domainCode?.toUpperCase()) {
+    case 'MFG': return 'text-blue-600 bg-blue-100';
+    case 'LOG': return 'text-green-600 bg-green-100';
+    case 'FCM': return 'text-purple-600 bg-purple-100';
+    case 'ENG': return 'text-orange-600 bg-orange-100';
+    default: return 'text-gray-600 bg-gray-100';
+  }
+};
 
 interface DashboardStats {
   totalDomains: number;
@@ -173,10 +196,9 @@ const IPManagementDashboard: React.FC = () => {
   };
 
   return (
-    <Layout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">IP Management Dashboard</h1>
             <p className="mt-2 text-gray-600">
@@ -203,10 +225,10 @@ const IPManagementDashboard: React.FC = () => {
               Add Device
             </Link>
           </div>
-        </div>
+      </div>
 
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="bg-white overflow-hidden shadow rounded-lg">
             <div className="p-5">
               <div className="flex items-center">
@@ -319,10 +341,10 @@ const IPManagementDashboard: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+      </div>
 
-        {/* Network Overview */}
-        <div className="bg-white shadow rounded-lg">
+      {/* Network Overview */}
+      <div className="bg-white shadow rounded-lg">
           <div className="px-4 py-5 sm:p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg leading-6 font-medium text-gray-900">Network Overview by Domain</h3>
@@ -388,19 +410,27 @@ const IPManagementDashboard: React.FC = () => {
                         <tr key={overview.domainId} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
-                              <div className="flex-shrink-0 h-8 w-8">
-                                <div className="h-8 w-8 rounded-lg bg-blue-100 flex items-center justify-center">
-                                  <span className="text-sm font-medium text-blue-600">
-                                    {overview.domainName}
-                                  </span>
+                              <div className="flex-shrink-0 h-10 w-10">
+                                <div className={cn(
+                                  'h-10 w-10 rounded-lg flex items-center justify-center',
+                                  getDomainColor(overview.domainName?.split(' ')[0] || '')
+                                )}>
+                                  {(() => {
+                                    const DomainIcon = getDomainIcon(overview.domainName?.split(' ')[0] || '');
+                                    return <DomainIcon className="h-5 w-5" />;
+                                  })()}
                                 </div>
                               </div>
                               <div className="ml-4">
-                                <div className="text-sm font-medium text-gray-900">
+                                <div className="text-sm font-medium text-gray-900 flex items-center">
+                                  {(() => {
+                                    const DomainIcon = getDomainIcon(overview.domainName?.split(' ')[0] || '');
+                                    return <DomainIcon className="h-4 w-4 mr-2" />;
+                                  })()}
                                   {overview.domainName}
                                 </div>
                                 <div className="text-sm text-gray-500">
-                                  Domain ID: {overview.domainId.slice(0, 8)}...
+                                  {overview.domainName?.split(' ')[0] || 'Unknown'} Domain
                                 </div>
                               </div>
                             </div>
@@ -457,10 +487,10 @@ const IPManagementDashboard: React.FC = () => {
               </div>
             )}
           </div>
-        </div>
+      </div>
 
-        {/* Quick Actions */}
-        <div className="bg-white shadow rounded-lg">
+      {/* Quick Actions */}
+      <div className="bg-white shadow rounded-lg">
           <div className="px-4 py-5 sm:p-6">
             <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Quick Actions</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -525,9 +555,8 @@ const IPManagementDashboard: React.FC = () => {
               </Link>
             </div>
           </div>
-        </div>
       </div>
-    </Layout>
+    </div>
   );
 };
 

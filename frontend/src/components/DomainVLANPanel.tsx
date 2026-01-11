@@ -50,10 +50,21 @@ interface VLAN {
   lastModified: string;
 }
 
-interface ConfigurationModal {
-  type: 'domain' | 'vlan' | null;
-  mode: 'create' | 'edit' | null;
-  data?: Domain | VLAN;
+interface VLANFormData {
+  vlanId: number;
+  name: string;
+  subnet: string;
+  gateway: string;
+  mask: string;
+  securityLevel: string;
+  domainId: string;
+}
+
+interface DomainFormData {
+  name: string;
+  code: string;
+  description: string;
+  color: string;
 }
 
 const DomainVLANPanel: React.FC = () => {
@@ -61,6 +72,23 @@ const DomainVLANPanel: React.FC = () => {
   const [expandedDomains, setExpandedDomains] = useState<string[]>([]);
   const [selectedItem, setSelectedItem] = useState<{ type: 'domain' | 'vlan'; id: string } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showVLANForm, setShowVLANForm] = useState(false);
+  const [showDomainForm, setShowDomainForm] = useState(false);
+  const [vlanFormData, setVlanFormData] = useState<VLANFormData>({
+    vlanId: 100,
+    name: '',
+    subnet: '',
+    gateway: '',
+    mask: '255.255.255.0',
+    securityLevel: 'MFZ_SL4',
+    domainId: '',
+  });
+  const [domainFormData, setDomainFormData] = useState<DomainFormData>({
+    name: '',
+    code: '',
+    description: '',
+    color: 'blue',
+  });
 
   // Mock data
   useEffect(() => {
@@ -198,6 +226,78 @@ const DomainVLANPanel: React.FC = () => {
     }
   };
 
+  const handleCreateVLAN = (domainId?: string) => {
+    setVlanFormData(prev => ({ ...prev, domainId: domainId || '' }));
+    setShowVLANForm(true);
+  };
+
+  const handleCreateDomain = () => {
+    setShowDomainForm(true);
+  };
+
+  const handleVLANSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Simulate VLAN creation
+    const newVLAN: VLAN = {
+      id: `vlan-${Date.now()}`,
+      vlanId: vlanFormData.vlanId,
+      name: vlanFormData.name,
+      subnet: vlanFormData.subnet,
+      gateway: vlanFormData.gateway,
+      mask: vlanFormData.mask,
+      securityLevel: vlanFormData.securityLevel,
+      status: 'active',
+      deviceCount: 0,
+      utilization: 0,
+      lastModified: new Date().toISOString(),
+    };
+
+    // Add VLAN to the selected domain
+    setDomains(prev => prev.map(domain => 
+      domain.id === vlanFormData.domainId 
+        ? { ...domain, vlans: [...domain.vlans, newVLAN] }
+        : domain
+    ));
+
+    // Reset form and close modal
+    setVlanFormData({
+      vlanId: 100,
+      name: '',
+      subnet: '',
+      gateway: '',
+      mask: '255.255.255.0',
+      securityLevel: 'MFZ_SL4',
+      domainId: '',
+    });
+    setShowVLANForm(false);
+  };
+
+  const handleDomainSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Simulate domain creation
+    const newDomain: Domain = {
+      id: `domain-${Date.now()}`,
+      name: domainFormData.name,
+      code: domainFormData.code,
+      description: domainFormData.description,
+      color: domainFormData.color,
+      status: 'active',
+      statistics: { totalVLANs: 0, totalIPs: 0, usedIPs: 0, utilization: 0 },
+      vlans: [],
+    };
+
+    setDomains(prev => [...prev, newDomain]);
+
+    // Reset form and close modal
+    setDomainFormData({
+      name: '',
+      code: '',
+      description: '',
+      color: 'blue',
+    });
+    setShowDomainForm(false);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -208,14 +308,14 @@ const DomainVLANPanel: React.FC = () => {
         </div>
         <div className="flex items-center space-x-3">
           <button
-            onClick={() => console.log('Add VLAN clicked')}
+            onClick={() => handleCreateVLAN()}
             className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
           >
             <ServerIcon className="h-4 w-4 mr-2" />
             Add VLAN
           </button>
           <button
-            onClick={() => console.log('Add Domain clicked')}
+            onClick={handleCreateDomain}
             className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
           >
             <PlusIcon className="h-4 w-4 mr-2" />
@@ -376,7 +476,7 @@ const DomainVLANPanel: React.FC = () => {
                                 </div>
                               ))}
                               <button
-                                onClick={() => console.log('Add VLAN to', domain.name)}
+                                onClick={() => handleCreateVLAN(domain.id)}
                                 className="w-full p-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-gray-400 hover:text-gray-600"
                               >
                                 <PlusIcon className="h-4 w-4 mx-auto mb-1" />
@@ -482,6 +582,181 @@ const DomainVLANPanel: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* VLAN Creation Modal */}
+        {showVLANForm && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+              <div className="mt-3">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Yeni VLAN Oluştur</h3>
+                <form onSubmit={handleVLANSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Domain</label>
+                    <select
+                      value={vlanFormData.domainId}
+                      onChange={(e) => setVlanFormData(prev => ({ ...prev, domainId: e.target.value }))}
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      required
+                    >
+                      <option value="">Domain Seçin</option>
+                      {domains.map(domain => (
+                        <option key={domain.id} value={domain.id}>{domain.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">VLAN ID</label>
+                    <input
+                      type="number"
+                      value={vlanFormData.vlanId}
+                      onChange={(e) => setVlanFormData(prev => ({ ...prev, vlanId: parseInt(e.target.value) }))}
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      required
+                      min="1"
+                      max="4094"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">VLAN Adı</label>
+                    <input
+                      type="text"
+                      value={vlanFormData.name}
+                      onChange={(e) => setVlanFormData(prev => ({ ...prev, name: e.target.value }))}
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      required
+                      placeholder="Örn: Production Line A2"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Subnet</label>
+                    <input
+                      type="text"
+                      value={vlanFormData.subnet}
+                      onChange={(e) => setVlanFormData(prev => ({ ...prev, subnet: e.target.value }))}
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      required
+                      placeholder="192.168.100.0/24"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Gateway</label>
+                    <input
+                      type="text"
+                      value={vlanFormData.gateway}
+                      onChange={(e) => setVlanFormData(prev => ({ ...prev, gateway: e.target.value }))}
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      required
+                      placeholder="192.168.100.1"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Güvenlik Seviyesi</label>
+                    <select
+                      value={vlanFormData.securityLevel}
+                      onChange={(e) => setVlanFormData(prev => ({ ...prev, securityLevel: e.target.value }))}
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="SL3">SL3 - Secure BCN</option>
+                      <option value="MFZ_SL4">MFZ_SL4 - Manufacturing Zone</option>
+                      <option value="LOG_SL4">LOG_SL4 - Logistics Zone</option>
+                      <option value="FMZ_SL4">FMZ_SL4 - Facility Zone</option>
+                      <option value="ENG_SL4">ENG_SL4 - Engineering Zone</option>
+                    </select>
+                  </div>
+                  <div className="flex justify-end space-x-3 pt-4">
+                    <button
+                      type="button"
+                      onClick={() => setShowVLANForm(false)}
+                      className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                    >
+                      İptal
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700"
+                    >
+                      VLAN Oluştur
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Domain Creation Modal */}
+        {showDomainForm && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+              <div className="mt-3">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Yeni Domain Oluştur</h3>
+                <form onSubmit={handleDomainSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Domain Adı</label>
+                    <input
+                      type="text"
+                      value={domainFormData.name}
+                      onChange={(e) => setDomainFormData(prev => ({ ...prev, name: e.target.value }))}
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      required
+                      placeholder="Örn: Manufacturing"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Domain Kodu</label>
+                    <input
+                      type="text"
+                      value={domainFormData.code}
+                      onChange={(e) => setDomainFormData(prev => ({ ...prev, code: e.target.value.toUpperCase() }))}
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      required
+                      placeholder="MFG"
+                      maxLength={3}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Açıklama</label>
+                    <textarea
+                      value={domainFormData.description}
+                      onChange={(e) => setDomainFormData(prev => ({ ...prev, description: e.target.value }))}
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                      rows={3}
+                      placeholder="Domain açıklaması..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Renk</label>
+                    <select
+                      value={domainFormData.color}
+                      onChange={(e) => setDomainFormData(prev => ({ ...prev, color: e.target.value }))}
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="blue">Mavi</option>
+                      <option value="green">Yeşil</option>
+                      <option value="purple">Mor</option>
+                      <option value="orange">Turuncu</option>
+                    </select>
+                  </div>
+                  <div className="flex justify-end space-x-3 pt-4">
+                    <button
+                      type="button"
+                      onClick={() => setShowDomainForm(false)}
+                      className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                    >
+                      İptal
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700"
+                    >
+                      Domain Oluştur
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
