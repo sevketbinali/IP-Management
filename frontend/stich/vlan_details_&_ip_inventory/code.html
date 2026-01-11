@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VLAN Details &amp; IP Inventory | IPManager Pro</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+<div class="layout-container flex h-full grow flex-col">
+<!-- Top Navigation Bar -->
+<header class="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-slate-800 px-10 py-3 bg-white dark:bg-background-dark sticky top-0 z-50">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-4 text-primary">
+<div class="size-6">
+<svg fill="none" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 4H17.3334V17.3334H30.6666V30.6666H44V44H4V4Z" fill="currentColor"></path>
+</svg>
+</div>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">IPManager Pro</h2>
+</div>
+<nav class="flex items-center gap-9">
+<a class="text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary text-sm font-medium leading-normal" href="#">Dashboard</a>
+<a class="text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary text-sm font-medium leading-normal" href="#">Subnets</a>
+<a class="text-primary text-sm font-bold leading-normal border-b-2 border-primary pb-1" href="#">VLANs</a>
+<a class="text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary text-sm font-medium leading-normal" href="#">Reports</a>
+<a class="text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary text-sm font-medium leading-normal" href="#">Settings</a>
+</nav>
+</div>
+<div class="flex flex-1 justify-end gap-4">
+<label class="flex flex-col min-w-40 !h-10 max-w-64">
+<div class="flex w-full flex-1 items-stretch rounded-lg h-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+<div class="text-slate-400 flex items-center justify-center pl-4 rounded-l-lg" data-icon="search">
+<span class="material-symbols-outlined text-xl">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 border-none bg-transparent focus:outline-0 focus:ring-0 text-slate-900 dark:text-white placeholder:text-slate-400 px-4 pl-2 text-sm font-normal" placeholder="Search IP or MAC..." value=""/>
+</div>
+</label>
+<div class="flex gap-2">
+<button class="flex items-center justify-center rounded-lg h-10 w-10 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="flex items-center justify-center rounded-lg h-10 w-10 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border border-slate-200 dark:border-slate-700" data-alt="User profile avatar placeholder" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBcs6xfbggm6w9PLZnjsybmi5EV3ocedOMI8pg-jZMMUdXmevASPpIjtJc_Bv2Mp83-fWBvE1dRczGfljVmaqKGF2BtyF5KIKihonJZRkgadlmOK0Qd9y8TIQyRFU1eVD9dnopNn1acnve-0OpYnh9jo6GczkNn38aH7G_VtaBQrn5j3L-UrbD5dIeGXiqLuhUh6yqEK_r7M35W2LsVjiaC37xBVB2kz8aAmgS7aSH3MR29DZy9QJFt70UU_rQetuqUZds5qgPTSHQ");'></div>
+</div>
+</header>
+<main class="flex-1 overflow-y-auto">
+<div class="max-w-[1280px] mx-auto px-6 lg:px-10 py-8">
+<!-- Breadcrumbs -->
+<div class="flex flex-wrap gap-2 mb-6">
+<a class="text-slate-500 dark:text-slate-400 text-sm font-medium flex items-center gap-1 hover:text-primary" href="#">
+<span class="material-symbols-outlined text-base">hub</span> Network
+                        </a>
+<span class="text-slate-400 text-sm">/</span>
+<a class="text-slate-500 dark:text-slate-400 text-sm font-medium hover:text-primary" href="#">VLANs</a>
+<span class="text-slate-400 text-sm">/</span>
+<span class="text-slate-900 dark:text-white text-sm font-semibold">VLAN 100 - Industrial Control</span>
+</div>
+<!-- Page Heading -->
+<div class="flex flex-wrap justify-between items-end gap-4 mb-8">
+<div class="flex flex-col gap-2">
+<h1 class="text-slate-900 dark:text-white text-3xl font-black leading-tight tracking-[-0.033em]">VLAN 100: Industrial Control Systems</h1>
+<div class="flex items-center gap-4 text-slate-500 dark:text-slate-400 text-sm font-normal">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-base">lan</span> 10.0.10.0/24</span>
+<span class="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-base">router</span> GW: 10.0.10.1</span>
+<span class="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+<span class="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[10px] font-bold uppercase tracking-wider">Critical Infrastructure</span>
+</div>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center justify-center gap-2 rounded-lg h-10 px-4 bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-white text-sm font-bold hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">
+<span class="material-symbols-outlined text-xl">ios_share</span>
+                                Export
+                            </button>
+<button class="flex items-center justify-center gap-2 rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-colors">
+<span class="material-symbols-outlined text-xl">add_circle</span>
+                                Add Device
+                            </button>
+</div>
+</div>
+<!-- Visual Stats & Charts Container -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+<!-- Stats Cards Group -->
+<div class="lg:col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-4">
+<div class="flex flex-col gap-2 rounded-xl p-5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark/50">
+<p class="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">Total IPs</p>
+<p class="text-slate-900 dark:text-white text-2xl font-black">254</p>
+<p class="text-slate-400 text-xs font-medium">Standard /24</p>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-5 border border-emerald-100 dark:border-emerald-900/30 bg-emerald-50/30 dark:bg-emerald-900/10">
+<p class="text-emerald-700 dark:text-emerald-400 text-xs font-semibold uppercase tracking-wider">Used</p>
+<p class="text-emerald-600 dark:text-emerald-400 text-2xl font-black">140</p>
+<div class="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
+<span class="material-symbols-outlined text-sm">trending_up</span> +2.4%
+                                </div>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-5 border border-amber-100 dark:border-amber-900/30 bg-amber-50/30 dark:bg-amber-900/10">
+<p class="text-amber-700 dark:text-amber-400 text-xs font-semibold uppercase tracking-wider">Reserved</p>
+<p class="text-amber-600 dark:text-amber-400 text-2xl font-black">10</p>
+<div class="flex items-center gap-1 text-amber-600 dark:text-amber-400 text-xs font-bold">
+<span class="material-symbols-outlined text-sm">horizontal_rule</span> 0%
+                                </div>
+</div>
+<div class="flex flex-col gap-2 rounded-xl p-5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark/50">
+<p class="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">Available</p>
+<p class="text-slate-900 dark:text-white text-2xl font-black">104</p>
+<div class="flex items-center gap-1 text-rose-600 dark:text-rose-400 text-xs font-bold">
+<span class="material-symbols-outlined text-sm">trending_down</span> -3.1%
+                                </div>
+</div>
+</div>
+<!-- Utilization Chart -->
+<div class="flex flex-col gap-4 rounded-xl p-6 border border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark/50">
+<div class="flex items-center justify-between">
+<p class="text-slate-900 dark:text-white text-sm font-bold">IP Utilization</p>
+<span class="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold">ACTIVE</span>
+</div>
+<div class="flex flex-col">
+<p class="text-slate-900 dark:text-white text-3xl font-black leading-tight">55.1%</p>
+<p class="text-slate-400 text-xs font-medium">140 of 254 addresses assigned</p>
+</div>
+<div class="mt-2 space-y-4">
+<div class="w-full h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex">
+<div class="bg-primary h-full" style="width: 55%;"></div>
+<div class="bg-amber-500 h-full" style="width: 4%;"></div>
+</div>
+<div class="flex items-center justify-between text-[11px] font-bold tracking-tight text-slate-500 uppercase">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary"></span> Used
+                                    </div>
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-amber-500"></span> Reserved
+                                    </div>
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-700"></span> Free
+                                    </div>
+</div>
+</div>
+</div>
+</div>
+<!-- Inventory Data Grid -->
+<div class="flex flex-col rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark overflow-hidden shadow-sm">
+<!-- Table Toolbar -->
+<div class="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-wrap gap-4 items-center justify-between">
+<div class="flex items-center gap-4 flex-1 min-w-[300px]">
+<div class="relative flex-1 max-w-sm">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">filter_list</span>
+<input class="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-primary focus:border-primary" placeholder="Quick filter by IP, Device, or Status..." type="text"/>
+</div>
+<div class="flex gap-2">
+<button class="text-sm font-medium px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg flex items-center gap-2 hover:bg-slate-100 dark:hover:bg-slate-800">
+                                        Device Type <span class="material-symbols-outlined text-sm">expand_more</span>
+</button>
+<button class="text-sm font-medium px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg flex items-center gap-2 hover:bg-slate-100 dark:hover:bg-slate-800">
+                                        Status <span class="material-symbols-outlined text-sm">expand_more</span>
+</button>
+</div>
+</div>
+<div class="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-xs font-medium">
+                                Showing 1-10 of 254 entries
+                                <div class="flex ml-2">
+<button class="p-1 border border-slate-200 dark:border-slate-700 rounded-l-md hover:bg-slate-50 dark:hover:bg-slate-800"><span class="material-symbols-outlined text-base">chevron_left</span></button>
+<button class="p-1 border-y border-r border-slate-200 dark:border-slate-700 rounded-r-md hover:bg-slate-50 dark:hover:bg-slate-800"><span class="material-symbols-outlined text-base">chevron_right</span></button>
+</div>
+</div>
+</div>
+<!-- Data Grid -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 text-[11px] font-bold uppercase tracking-wider">
+<th class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 w-10">
+<input class="rounded text-primary focus:ring-primary bg-transparent border-slate-300 dark:border-slate-600" type="checkbox"/>
+</th>
+<th class="px-6 py-4 border-b border-slate-200 dark:border-slate-800">IP Address</th>
+<th class="px-6 py-4 border-b border-slate-200 dark:border-slate-800">Hostname / Device</th>
+<th class="px-6 py-4 border-b border-slate-200 dark:border-slate-800">Type</th>
+<th class="px-6 py-4 border-b border-slate-200 dark:border-slate-800">Status</th>
+<th class="px-6 py-4 border-b border-slate-200 dark:border-slate-800">MAC Address</th>
+<th class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="text-sm divide-y divide-slate-200 dark:divide-slate-800">
+<!-- Row 1 -->
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors group">
+<td class="px-6 py-4"><input class="rounded text-primary focus:ring-primary bg-transparent border-slate-300 dark:border-slate-600" type="checkbox"/></td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 font-mono text-slate-900 dark:text-white font-bold">
+                                                10.0.10.1
+                                                <button class="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-primary"><span class="material-symbols-outlined text-sm">content_copy</span></button>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="font-semibold text-slate-900 dark:text-white">IC-GATEWAY-01</span>
+<span class="text-xs text-slate-500">Core Layer 3 Switch</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined text-lg text-primary">router</span>
+                                                Network
+                                            </div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Active
+                                            </span>
+</td>
+<td class="px-6 py-4 font-mono text-slate-500 text-xs">00:1A:2B:3C:4D:5E</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-400 hover:text-primary"><span class="material-symbols-outlined text-xl">more_vert</span></button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors group">
+<td class="px-6 py-4"><input class="rounded text-primary focus:ring-primary bg-transparent border-slate-300 dark:border-slate-600" type="checkbox"/></td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 font-mono text-slate-900 dark:text-white font-bold">
+                                                10.0.10.15
+                                                <button class="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-primary"><span class="material-symbols-outlined text-sm">content_copy</span></button>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="font-semibold text-slate-900 dark:text-white">PLC-ASSEMBLY-04</span>
+<span class="text-xs text-slate-500">Siemens S7-1200</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined text-lg text-amber-500">settings_input_component</span>
+                                                OT Device
+                                            </div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Active
+                                            </span>
+</td>
+<td class="px-6 py-4 font-mono text-slate-500 text-xs">E4:F0:42:12:33:91</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-400 hover:text-primary"><span class="material-symbols-outlined text-xl">more_vert</span></button>
+</td>
+</tr>
+<!-- Row 3 (Reserved) -->
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors group bg-amber-50/10 dark:bg-amber-900/5">
+<td class="px-6 py-4"><input class="rounded text-primary focus:ring-primary bg-transparent border-slate-300 dark:border-slate-600" type="checkbox"/></td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 font-mono text-amber-600 dark:text-amber-400 font-bold">
+                                                10.0.10.20
+                                                <button class="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-primary"><span class="material-symbols-outlined text-sm">content_copy</span></button>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="font-semibold text-slate-900 dark:text-white italic">Expansion Reserved</span>
+<span class="text-xs text-slate-500">Project: Alpha Assembly Line</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 text-xs font-medium text-slate-400">
+<span class="material-symbols-outlined text-lg">pending</span>
+                                                Reserved
+                                            </div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Reserved
+                                            </span>
+</td>
+<td class="px-6 py-4 font-mono text-slate-400 text-xs text-center">---</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-400 hover:text-primary"><span class="material-symbols-outlined text-xl">more_vert</span></button>
+</td>
+</tr>
+<!-- Row 4 (Available) -->
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors group">
+<td class="px-6 py-4"><input class="rounded text-primary focus:ring-primary bg-transparent border-slate-300 dark:border-slate-600" type="checkbox"/></td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 font-mono text-slate-400 font-bold">
+                                                10.0.10.21
+                                            </div>
+</td>
+<td class="px-6 py-4">
+<span class="text-xs text-slate-400 italic">Unassigned</span>
+</td>
+<td class="px-6 py-4">
+<span class="text-xs text-slate-400">-</span>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> Available
+                                            </span>
+</td>
+<td class="px-6 py-4 font-mono text-slate-400 text-xs text-center">---</td>
+<td class="px-6 py-4 text-right">
+<button class="text-primary hover:underline text-xs font-bold">Assign</button>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors group">
+<td class="px-6 py-4"><input class="rounded text-primary focus:ring-primary bg-transparent border-slate-300 dark:border-slate-600" type="checkbox"/></td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 font-mono text-slate-900 dark:text-white font-bold">
+                                                10.0.10.22
+                                                <button class="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-primary"><span class="material-symbols-outlined text-sm">content_copy</span></button>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="font-semibold text-slate-900 dark:text-white">SENSOR-TANK-B</span>
+<span class="text-xs text-slate-500">Level Monitor Hub</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined text-lg text-emerald-500">sensors</span>
+                                                OT Device
+                                            </div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 uppercase">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Active
+                                            </span>
+</td>
+<td class="px-6 py-4 font-mono text-slate-500 text-xs">8C:49:11:AA:BB:CC</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-400 hover:text-primary"><span class="material-symbols-outlined text-xl">more_vert</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Footer / Pagination -->
+<div class="p-4 bg-slate-50/50 dark:bg-slate-900/30 flex items-center justify-between border-t border-slate-200 dark:border-slate-800">
+<div class="flex gap-2">
+<button class="px-3 py-1 text-xs font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">Clear Selection</button>
+<button class="px-3 py-1 text-xs font-bold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded transition-colors">Bulk Release</button>
+</div>
+<div class="flex items-center gap-1">
+<button class="w-8 h-8 flex items-center justify-center rounded bg-primary text-white text-xs font-bold">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-xs font-medium">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-xs font-medium">3</button>
+<span class="mx-1 text-slate-400">...</span>
+<button class="w-8 h-8 flex items-center justify-center rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-xs font-medium">25</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+<!-- Hidden / Slide-over Interaction Logic Concept: This would be the "Add Device" Slide-over -->
+<!-- Not visible by default, but structured here for UI completeness -->
+<div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[60] hidden">
+<div class="absolute right-0 top-0 h-full w-full max-w-md bg-white dark:bg-background-dark shadow-2xl flex flex-col">
+<div class="p-6 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+<h3 class="text-xl font-bold text-slate-900 dark:text-white">Register New Device</h3>
+<button class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto p-6 space-y-6">
+<div class="space-y-2">
+<label class="text-xs font-bold uppercase tracking-wider text-slate-500">IP Allocation</label>
+<div class="grid grid-cols-2 gap-3">
+<button class="p-3 border-2 border-primary bg-primary/5 rounded-lg text-left">
+<span class="block text-sm font-bold text-primary">Automatic</span>
+<span class="text-[10px] text-slate-500">Assign next available IP</span>
+</button>
+<button class="p-3 border-2 border-slate-200 dark:border-slate-800 rounded-lg text-left hover:border-slate-400">
+<span class="block text-sm font-bold text-slate-700 dark:text-slate-300">Manual</span>
+<span class="text-[10px] text-slate-500">Specify IP address</span>
+</button>
+</div>
+</div>
+<div class="space-y-4">
+<div>
+<label class="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">Hostname</label>
+<input class="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-lg" placeholder="e.g. PLC-UNIT-501" type="text"/>
+</div>
+<div>
+<label class="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">MAC Address</label>
+<input class="w-full font-mono bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-lg" placeholder="XX:XX:XX:XX:XX:XX" type="text"/>
+</div>
+<div>
+<label class="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">Device Category</label>
+<select class="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-lg">
+<option>OT Device (PLC/HMI)</option>
+<option>Network Infrastructure</option>
+<option>Workstation</option>
+<option>Server</option>
+</select>
+</div>
+</div>
+</div>
+<div class="p-6 border-t border-slate-200 dark:border-slate-800 flex gap-3">
+<button class="flex-1 py-3 bg-primary text-white font-bold rounded-lg shadow-lg shadow-primary/20">Reserve Address</button>
+<button class="px-6 py-3 bg-slate-100 dark:bg-slate-800 font-bold rounded-lg">Cancel</button>
+</div>
+</div>
+</div>
+</body></html>

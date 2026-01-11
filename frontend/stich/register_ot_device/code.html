@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Register OT Device - Enterprise IPAM</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white min-h-screen overflow-x-hidden">
+<div class="flex h-screen overflow-hidden">
+<!-- Side Navigation (Left) -->
+<aside class="w-64 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between bg-white dark:bg-[#111418]">
+<div class="flex flex-col gap-6 p-6">
+<div class="flex items-center gap-3">
+<div class="bg-primary/20 p-2 rounded-lg">
+<span class="material-symbols-outlined text-primary">hub</span>
+</div>
+<div>
+<h1 class="text-sm font-bold leading-none">Enterprise IPAM</h1>
+<p class="text-xs text-slate-500 dark:text-[#9dabb9] mt-1">Network Admin</p>
+</div>
+</div>
+<nav class="flex flex-col gap-1">
+<div class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-[#9dabb9] hover:bg-slate-100 dark:hover:bg-[#283039] cursor-pointer">
+<span class="material-symbols-outlined">dashboard</span>
+<p class="text-sm font-medium">Dashboard</p>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-[#9dabb9] hover:bg-slate-100 dark:hover:bg-[#283039] cursor-pointer">
+<span class="material-symbols-outlined">lan</span>
+<p class="text-sm font-medium">IP Management</p>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 rounded-lg bg-primary/10 text-primary">
+<span class="material-symbols-outlined">layers</span>
+<p class="text-sm font-medium">VLANs</p>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-[#9dabb9] hover:bg-slate-100 dark:hover:bg-[#283039] cursor-pointer">
+<span class="material-symbols-outlined">memory</span>
+<p class="text-sm font-medium">Devices</p>
+</div>
+<div class="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 dark:text-[#9dabb9] hover:bg-slate-100 dark:hover:bg-[#283039] cursor-pointer">
+<span class="material-symbols-outlined">settings</span>
+<p class="text-sm font-medium">Settings</p>
+</div>
+</nav>
+</div>
+<div class="p-6 border-t border-slate-200 dark:border-slate-800">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-cover bg-center" data-alt="User avatar placeholder" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAjgiwN09xaRa6A-XILi4y8EVH4cjI6kz21tOSdXPYD9U86yJQRkQXgYziTGPU3ckXQxf632uod3c_JJSmfdyEWdkmUlLKak3saWR08scilaY2cs1S7l8s7svR7Xzm0zdWfqssdoitzrvazQSgyMfCTTLPRIVrVwGRjP6Bvznp9-JPGguSBr91dCNhjpm8v7P-QUZASEZoC5IcdvMcVfuW4D3lB0E1xuJdzYq8flGYMr-mkCWAXyqkfDoUO8uHVMKmh8bLyGJigqnY");'></div>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-medium truncate">Alex Rivera</p>
+<p class="text-xs text-slate-500 truncate">System Engineer</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area (Center Background) -->
+<main class="flex-1 flex flex-col relative overflow-hidden">
+<!-- Top Nav -->
+<header class="h-16 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 bg-white dark:bg-[#111418]">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 text-slate-500 dark:text-[#9dabb9] text-sm font-medium">
+<span>Network</span>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<span>VLAN 102 - Manufacturing</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-slate-400">search</span>
+<input class="pl-10 pr-4 py-1.5 rounded-lg border border-slate-200 dark:border-[#283039] bg-slate-50 dark:bg-[#283039] text-sm focus:ring-primary focus:border-primary" placeholder="Search devices..." type="text"/>
+</div>
+<button class="material-symbols-outlined p-2 text-slate-500 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">notifications</button>
+</div>
+</header>
+<!-- Background Content (Simulating a list) -->
+<div class="flex-1 p-8 opacity-40 select-none pointer-events-none">
+<div class="flex justify-between items-end mb-8">
+<div>
+<h2 class="text-3xl font-black tracking-tight">VLAN 102 Inventory</h2>
+<p class="text-slate-500">142 active nodes / 254 total capacity</p>
+</div>
+</div>
+<div class="grid grid-cols-4 gap-4 mb-8">
+<div class="h-24 bg-white dark:bg-[#1b2531] rounded-xl border border-slate-200 dark:border-slate-800 p-4"></div>
+<div class="h-24 bg-white dark:bg-[#1b2531] rounded-xl border border-slate-200 dark:border-slate-800 p-4"></div>
+<div class="h-24 bg-white dark:bg-[#1b2531] rounded-xl border border-slate-200 dark:border-slate-800 p-4"></div>
+<div class="h-24 bg-white dark:bg-[#1b2531] rounded-xl border border-slate-200 dark:border-slate-800 p-4"></div>
+</div>
+<div class="space-y-4">
+<div class="h-12 bg-white dark:bg-[#1b2531] rounded-lg border border-slate-200 dark:border-slate-800"></div>
+<div class="h-12 bg-white dark:bg-[#1b2531] rounded-lg border border-slate-200 dark:border-slate-800"></div>
+<div class="h-12 bg-white dark:bg-[#1b2531] rounded-lg border border-slate-200 dark:border-slate-800"></div>
+<div class="h-12 bg-white dark:bg-[#1b2531] rounded-lg border border-slate-200 dark:border-slate-800"></div>
+</div>
+</div>
+<!-- Modal Backdrop (Simulated) -->
+<div class="absolute inset-0 bg-black/40 backdrop-blur-sm z-10"></div>
+<!-- Slide-over Register Panel (Right) -->
+<div class="absolute inset-y-0 right-0 w-full max-w-lg bg-white dark:bg-background-dark shadow-2xl z-20 flex flex-col border-l border-slate-200 dark:border-slate-800">
+<!-- Panel Header -->
+<div class="px-8 pt-8 pb-4">
+<div class="flex justify-between items-center mb-6">
+<button class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+<span class="material-symbols-outlined text-slate-500">close</span>
+</button>
+<button class="text-sm font-bold text-primary hover:underline px-4 py-2 bg-primary/10 rounded-lg">
+                            Auto-fill Template
+                        </button>
+</div>
+<h2 class="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Register OT Device</h2>
+<p class="text-slate-500 dark:text-[#9dabb9] text-base mt-2">Add a new industrial asset to VLAN 102</p>
+</div>
+<!-- Panel Content (Scrollable Form) -->
+<div class="flex-1 overflow-y-auto px-8 py-6 space-y-8">
+<!-- Network Section -->
+<section class="space-y-4">
+<div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
+<span class="material-symbols-outlined text-sm">settings_ethernet</span>
+                            Network Allocation
+                        </div>
+<div class="space-y-4 bg-slate-50 dark:bg-[#1b2531] p-5 rounded-xl border border-slate-200 dark:border-slate-800">
+<div>
+<div class="flex justify-between items-center mb-2">
+<label class="text-sm font-semibold">IP Address</label>
+<button class="text-xs font-bold text-primary flex items-center gap-1 hover:brightness-110">
+<span class="material-symbols-outlined text-xs">auto_fix_high</span>
+                                        Suggest Next Available
+                                    </button>
+</div>
+<input class="w-full bg-white dark:bg-[#111418] border border-slate-200 dark:border-[#283039] rounded-lg px-4 py-2.5 font-mono text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none" placeholder="192.168.102.0" type="text"/>
+<p class="text-[10px] text-slate-400 mt-2">Current Range: 192.168.102.1 - 192.168.102.254</p>
+</div>
+</div>
+</section>
+<!-- Device Details Section -->
+<section class="space-y-4">
+<div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
+<span class="material-symbols-outlined text-sm">inventory_2</span>
+                            Hardware Details
+                        </div>
+<div class="grid grid-cols-2 gap-4">
+<div class="col-span-2">
+<label class="text-sm font-semibold mb-2 block">Device Name</label>
+<input class="w-full bg-slate-50 dark:bg-[#1b2531] border border-slate-200 dark:border-[#283039] rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none" placeholder="PLC-LINE-04-A" type="text"/>
+</div>
+<div>
+<label class="text-sm font-semibold mb-2 block">Manufacturer</label>
+<input class="w-full bg-slate-50 dark:bg-[#1b2531] border border-slate-200 dark:border-[#283039] rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none" placeholder="Siemens, Rockwell..." type="text"/>
+</div>
+<div>
+<label class="text-sm font-semibold mb-2 block">Device Type</label>
+<select class="w-full bg-slate-50 dark:bg-[#1b2531] border border-slate-200 dark:border-[#283039] rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none appearance-none">
+<option>PLC</option>
+<option>HMI</option>
+<option>Sensor</option>
+<option>Gateway</option>
+<option>Actuator</option>
+</select>
+</div>
+</div>
+</section>
+<!-- Logic Section -->
+<section class="space-y-4 pb-10">
+<div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
+<span class="material-symbols-outlined text-sm">room</span>
+                            Categorization &amp; Ownership
+                        </div>
+<div class="space-y-4">
+<div>
+<label class="text-sm font-semibold mb-2 block">Security Zone</label>
+<select class="w-full bg-slate-50 dark:bg-[#1b2531] border border-slate-200 dark:border-[#283039] rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none">
+<option>Zone A - Production</option>
+<option>Zone B - Testing</option>
+<option>Zone C - External</option>
+</select>
+</div>
+<div>
+<label class="text-sm font-semibold mb-2 block">Owner / Department</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-slate-400 text-sm">person</span>
+<input class="w-full pl-10 pr-4 bg-slate-50 dark:bg-[#1b2531] border border-slate-200 dark:border-[#283039] rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none" placeholder="Search for owner..." type="text"/>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Panel Footer -->
+<div class="p-8 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-[#111418] flex gap-3">
+<button class="flex-1 py-3 px-4 rounded-lg bg-slate-100 dark:bg-[#283039] text-slate-700 dark:text-white font-bold text-sm hover:bg-slate-200 dark:hover:bg-[#343e4a] transition-colors">
+                        Cancel
+                    </button>
+<button class="flex-[2] py-3 px-4 rounded-lg bg-primary text-white font-bold text-sm hover:brightness-110 shadow-lg shadow-primary/20 transition-all">
+                        Register Device
+                    </button>
+</div>
+</div>
+</main>
+</div>
+</body></html>

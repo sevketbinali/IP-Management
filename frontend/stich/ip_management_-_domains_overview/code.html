@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>IP Management - Domains Overview</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .sidebar-active {
+            background-color: rgba(19, 127, 236, 0.15);
+            border-left: 4px solid #137fec;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100">
+<div class="flex h-screen overflow-hidden">
+<!-- Side Navigation Bar -->
+<aside class="w-64 flex-shrink-0 bg-white dark:bg-[#111418] border-r border-slate-200 dark:border-slate-800 flex flex-col">
+<div class="p-6 flex items-center gap-3">
+<div class="bg-primary rounded-lg p-2 text-white">
+<span class="material-symbols-outlined block">hub</span>
+</div>
+<div>
+<h1 class="text-lg font-bold leading-none">IP Manager</h1>
+<p class="text-xs text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-wider font-semibold">Enterprise Console</p>
+</div>
+</div>
+<nav class="flex-1 px-3 space-y-1 mt-4">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg bg-primary/10 text-primary border-l-4 border-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1">language</span>
+<span class="text-sm font-bold">Domains</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">lan</span>
+<span class="text-sm font-medium">IPAM</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">devices</span>
+<span class="text-sm font-medium">Devices</span>
+</a>
+<div class="pt-4 mt-4 border-t border-slate-200 dark:border-slate-800">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</a>
+</div>
+</nav>
+<div class="p-4 border-t border-slate-200 dark:border-slate-800">
+<div class="flex items-center gap-3 p-2">
+<div class="size-10 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="User profile avatar icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOnKrja8YmL0pSyr2tnb1Ky_oJIMsaxacsK3PxLpXhFpwRa-fW76-LFJsi_wAqFCJTIXsrhhPanFyzpJLpddvzNiB8mGOyfUFVyxq0RBHZxIQHmwgYApuBLPF9Oyqe3hLkHoVDSJW6ZCSvDPyJSOOVGzV8S_YM6gpmFfaHfDrDO9h_MEBSow507bbxaCmbGvneaMxC8pvWjVNQZpNaEpNP8wljpisN0rM220D2H7lcQhWdeEdnuruTNMwym-ODD6yZTRLrrbOf_rs"/>
+</div>
+<div class="overflow-hidden">
+<p class="text-sm font-bold truncate text-slate-900 dark:text-white">Alex Rivera</p>
+<p class="text-xs text-slate-500 dark:text-slate-400 truncate">Net Architect</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col overflow-hidden bg-background-light dark:bg-background-dark">
+<!-- Top Navigation Bar -->
+<header class="h-16 flex items-center justify-between px-8 bg-white dark:bg-[#111418] border-b border-slate-200 dark:border-slate-800 z-10">
+<div class="flex items-center gap-6 flex-1">
+<h2 class="text-xl font-bold tracking-tight text-slate-900 dark:text-white whitespace-nowrap">Domains Overview</h2>
+<div class="max-w-md w-full relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-slate-400 size-5">search</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-2 border-none bg-slate-100 dark:bg-slate-800/50 rounded-lg text-sm placeholder-slate-500 focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-slate-800 transition-all text-slate-900 dark:text-white" placeholder="Search domains, subnets or IPs..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-all shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+<span>Add Domain</span>
+</button>
+<div class="h-8 w-px bg-slate-200 dark:border-slate-800"></div>
+<button class="text-slate-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</div>
+</header>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto p-8">
+<!-- Tabs -->
+<div class="mb-6">
+<div class="flex border-b border-slate-200 dark:border-slate-800 gap-8">
+<a class="border-b-2 border-primary text-primary pb-4 px-1 text-sm font-bold flex items-center gap-2" href="#">
+                            All Domains <span class="bg-primary/10 text-[10px] px-1.5 py-0.5 rounded-full uppercase tracking-tighter">12</span>
+</a>
+<a class="border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 pb-4 px-1 text-sm font-medium" href="#">Manufacturing</a>
+<a class="border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 pb-4 px-1 text-sm font-medium" href="#">Logistics</a>
+<a class="border-b-2 border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 pb-4 px-1 text-sm font-medium" href="#">Facilities</a>
+</div>
+</div>
+<!-- Section Header -->
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-lg font-bold text-slate-900 dark:text-white">Active Infrastructure Domains</h3>
+<div class="flex gap-2">
+<button class="p-2 rounded-md border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-[20px]">filter_list</span>
+</button>
+<button class="p-2 rounded-md border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined text-[20px]">grid_view</span>
+</button>
+</div>
+</div>
+<!-- Grid Layout for Domain Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- MFG Card -->
+<div class="group bg-white dark:bg-[#111418] border border-slate-200 dark:border-slate-800 rounded-xl p-5 hover:border-primary transition-all cursor-pointer">
+<div class="flex justify-between items-start mb-4">
+<div class="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500">
+<span class="material-symbols-outlined text-3xl">factory</span>
+</div>
+<span class="text-[10px] font-bold bg-green-500/10 text-green-500 px-2 py-1 rounded uppercase tracking-wider">Stable</span>
+</div>
+<h4 class="text-lg font-bold text-slate-900 dark:text-white mb-1">MFG - Manufacturing</h4>
+<p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Core production network segment</p>
+<div class="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+<div class="flex justify-between text-sm">
+<span class="text-slate-500 dark:text-slate-400">VLANs</span>
+<span class="font-bold text-slate-900 dark:text-white">45</span>
+</div>
+<div class="flex justify-between text-sm">
+<span class="text-slate-500 dark:text-slate-400">Devices</span>
+<span class="font-bold text-slate-900 dark:text-white">1,200</span>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden mt-2">
+<div class="bg-primary h-full w-[75%]" data-alt="Progress bar indicating device capacity"></div>
+</div>
+</div>
+</div>
+<!-- LOG Card -->
+<div class="group bg-white dark:bg-[#111418] border border-slate-200 dark:border-slate-800 rounded-xl p-5 hover:border-primary transition-all cursor-pointer">
+<div class="flex justify-between items-start mb-4">
+<div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-3xl">local_shipping</span>
+</div>
+<span class="text-[10px] font-bold bg-green-500/10 text-green-500 px-2 py-1 rounded uppercase tracking-wider">Stable</span>
+</div>
+<h4 class="text-lg font-bold text-slate-900 dark:text-white mb-1">LOG - Logistics</h4>
+<p class="text-sm text-slate-500 dark:text-slate-400 mb-4">Supply chain &amp; warehouse Ops</p>
+<div class="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+<div class="flex justify-between text-sm">
+<span class="text-slate-500 dark:text-slate-400">VLANs</span>
+<span class="font-bold text-slate-900 dark:text-white">12</span>
+</div>
+<div class="flex justify-between text-sm">
+<span class="text-slate-500 dark:text-slate-400">Devices</span>
+<span class="font-bold text-slate-900 dark:text-white">450</span>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden mt-2">
+<div class="bg-primary h-full w-[40%]" data-alt="Progress bar indicating device capacity"></div>
+</div>
+</div>
+</div>
+<!-- FCM Card -->
+<div class="group bg-white dark:bg-[#111418] border border-slate-200 dark:border-slate-800 rounded-xl p-5 hover:border-amber-500 transition-all cursor-pointer">
+<div class="flex justify-between items-start mb-4">
+<div class="w-12 h-12 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500">
+<span class="material-symbols-outlined text-3xl">apartment</span>
+</div>
+<span class="text-[10px] font-bold bg-amber-500/10 text-amber-500 px-2 py-1 rounded uppercase tracking-wider">Warning</span>
+</div>
+<h4 class="text-lg font-bold text-slate-900 dark:text-white mb-1">FCM - Facilities</h4>
+<p class="text-sm text-slate-500 dark:text-slate-400 mb-4">BMS and security systems</p>
+<div class="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+<div class="flex justify-between text-sm">
+<span class="text-slate-500 dark:text-slate-400">VLANs</span>
+<span class="font-bold text-slate-900 dark:text-white">8</span>
+</div>
+<div class="flex justify-between text-sm">
+<span class="text-slate-500 dark:text-slate-400">Devices</span>
+<span class="font-bold text-slate-900 dark:text-white text-amber-500">120</span>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden mt-2">
+<div class="bg-amber-500 h-full w-[90%]" data-alt="Amber progress bar showing high device usage"></div>
+</div>
+</div>
+</div>
+<!-- ENG Card -->
+<div class="group bg-white dark:bg-[#111418] border border-slate-200 dark:border-slate-800 rounded-xl p-5 hover:border-primary transition-all cursor-pointer">
+<div class="flex justify-between items-start mb-4">
+<div class="w-12 h-12 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-500">
+<span class="material-symbols-outlined text-3xl">terminal</span>
+</div>
+<span class="text-[10px] font-bold bg-green-500/10 text-green-500 px-2 py-1 rounded uppercase tracking-wider">Stable</span>
+</div>
+<h4 class="text-lg font-bold text-slate-900 dark:text-white mb-1">ENG - Engineering</h4>
+<p class="text-sm text-slate-500 dark:text-slate-400 mb-4">R&amp;D and Development labs</p>
+<div class="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+<div class="flex justify-between text-sm">
+<span class="text-slate-500 dark:text-slate-400">VLANs</span>
+<span class="font-bold text-slate-900 dark:text-white">24</span>
+</div>
+<div class="flex justify-between text-sm">
+<span class="text-slate-500 dark:text-slate-400">Devices</span>
+<span class="font-bold text-slate-900 dark:text-white">890</span>
+</div>
+<div class="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden mt-2">
+<div class="bg-primary h-full w-[60%]" data-alt="Progress bar indicating device capacity"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Detailed Statistics Section -->
+<div class="mt-12 bg-white dark:bg-[#111418] rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+<div class="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+<h2 class="text-lg font-bold text-slate-900 dark:text-white">Detailed Domain Statistics</h2>
+<button class="text-primary text-sm font-bold hover:underline">Download Report</button>
+</div>
+<div class="p-0">
+<table class="w-full text-left">
+<thead class="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-wider font-bold">
+<tr>
+<th class="px-6 py-4">Domain Name</th>
+<th class="px-6 py-4">Status</th>
+<th class="px-6 py-4">VLAN Range</th>
+<th class="px-6 py-4 text-right">Activity</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4">
+<div class="font-medium text-slate-900 dark:text-white">Manufacturing (MFG)</div>
+<div class="text-xs text-slate-500">ID: DOM-001</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-500/10 dark:text-green-500">
+<span class="size-1.5 rounded-full bg-green-600 dark:bg-green-500"></span> Online
+                                        </span>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 font-mono">100 - 145</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end">
+<div class="h-6 w-24 bg-primary/20 rounded flex items-end gap-0.5 p-1 overflow-hidden">
+<div class="w-full h-2/3 bg-primary rounded-t-sm"></div>
+<div class="w-full h-1/2 bg-primary rounded-t-sm"></div>
+<div class="w-full h-3/4 bg-primary rounded-t-sm"></div>
+<div class="w-full h-1/3 bg-primary rounded-t-sm"></div>
+<div class="w-full h-5/6 bg-primary rounded-t-sm"></div>
+</div>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+<td class="px-6 py-4">
+<div class="font-medium text-slate-900 dark:text-white">Logistics (LOG)</div>
+<div class="text-xs text-slate-500">ID: DOM-002</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-500/10 dark:text-green-500">
+<span class="size-1.5 rounded-full bg-green-600 dark:bg-green-500"></span> Online
+                                        </span>
+</td>
+<td class="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 font-mono">200 - 212</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end">
+<div class="h-6 w-24 bg-primary/20 rounded flex items-end gap-0.5 p-1 overflow-hidden">
+<div class="w-full h-1/3 bg-primary rounded-t-sm"></div>
+<div class="w-full h-2/3 bg-primary rounded-t-sm"></div>
+<div class="w-full h-1/2 bg-primary rounded-t-sm"></div>
+<div class="w-full h-1/4 bg-primary rounded-t-sm"></div>
+<div class="w-full h-2/5 bg-primary rounded-t-sm"></div>
+</div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
