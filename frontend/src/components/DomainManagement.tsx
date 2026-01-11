@@ -1,328 +1,228 @@
 /**
  * Domain Management Component
- * Comprehensive domain CRUD operations with industrial-grade UX
+ * Interface for managing domains and their value streams
  */
 
-import React, { useEffect } from 'react';
-import { PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import {
+  PlusIcon,
+  MagnifyingGlassIcon,
+  BuildingOfficeIcon,
+  ChevronRightIcon,
+  PencilIcon,
+  TrashIcon,
+  EyeIcon,
+} from '@heroicons/react/24/outline';
+import { Layout } from './Layout';
 import { useDomainStore } from '@/stores/useDomainStore';
-import { Domain, DomainType, TableColumn } from '@/types';
-import { Button, Input, Table, Modal, Select, Badge } from '@/components/ui';
-import { formatDateTime, getSecurityLevelColor } from '@/utils';
-import { DomainForm } from './DomainForm';
-import toast from 'react-hot-toast';
+import { cn, formatDateTime } from '@/utils';
 
 const DomainManagement: React.FC = () => {
-  const navigate = useNavigate();
-  const {
-    domains,
-    selectedDomain,
-    loading,
-    error,
-    pagination,
-    filters,
-    showCreateModal,
-    showEditModal,
-    showDeleteModal,
-    fetchDomains,
-    deleteDomain,
-    selectDomain,
-    setFilters,
-    setPagination,
-    setShowCreateModal,
-    setShowEditModal,
-    setShowDeleteModal,
-    clearError,
+  const { 
+    domains, 
+    selectedDomain, 
+    loading, 
+    fetchDomains, 
+    selectDomain 
   } = useDomainStore();
+
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Fetch domains on component mount
   useEffect(() => {
     fetchDomains();
   }, [fetchDomains]);
 
-  // Clear error when component unmounts
-  useEffect(() => {
-    return () => clearError();
-  }, [clearError]);
-
-  const handleSearch = (value: string): void => {
-    setFilters({ search: value });
-  };
-
-  const handleSort = (sortBy: string): void => {
-    const newSortOrder = filters.sortBy === sortBy && filters.sortOrder === 'asc' ? 'desc' : 'asc';
-    setFilters({ sortBy, sortOrder: newSortOrder });
-  };
-
-  const handleEdit = (domain: Domain): void => {
-    selectDomain(domain);
-    setShowEditModal(true);
-  };
-
-  const handleDelete = (domain: Domain): void => {
-    selectDomain(domain);
-    setShowDeleteModal(true);
-  };
-
-  const handleView = (domain: Domain): void => {
-    navigate(`/domains/${domain.id}`);
-  };
-
-  const confirmDelete = async (): Promise<void> => {
-    if (selectedDomain) {
-      await deleteDomain(selectedDomain.id);
-    }
-  };
-
-  const getDomainTypeColor = (type: DomainType): string => {
-    if (!type) return 'bg-secondary-100 text-secondary-800';
-    switch (type) {
-      case DomainType.MFG:
-        return 'bg-success-100 text-success-800';
-      case DomainType.LOG:
-        return 'bg-warning-100 text-warning-800';
-      case DomainType.FCM:
-        return 'bg-primary-100 text-primary-800';
-      case DomainType.ENG:
-        return 'bg-secondary-100 text-secondary-800';
-      default:
-        return 'bg-secondary-100 text-secondary-800';
-    }
-  };
-
-  const getDomainDescription = (type: DomainType): string => {
-    if (!type) return 'Unknown domain type';
-    switch (type) {
-      case DomainType.MFG:
-        return 'Manufacturing (A2, A4, A6, A10, MCO)';
-      case DomainType.LOG:
-        return 'Logistics (LOG21)';
-      case DomainType.FCM:
-        return 'Facility Management (Analyzers, Cameras, Building Systems)';
-      case DomainType.ENG:
-        return 'Engineering (Test Benches)';
-      default:
-        return 'Unknown domain type';
-    }
-  };
-
-  const columns: TableColumn<Domain>[] = [
-    {
-      key: 'name',
-      title: 'Domain Type',
-      sortable: true,
-      render: (value, record) => (
-        <div className="flex items-center space-x-3">
-          <Badge className={getDomainTypeColor(record.name)}>
-            {record.name}
-          </Badge>
-          <div>
-            <div className="font-medium text-secondary-900">{record.name}</div>
-            <div className="text-sm text-secondary-500">
-              {getDomainDescription(record.name)}
-            </div>
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: 'description',
-      title: 'Description',
-      render: (value) => (
-        <div className="max-w-xs truncate text-secondary-900" title={String(value)}>
-          {String(value)}
-        </div>
-      ),
-    },
-    {
-      key: 'valueStreamCount',
-      title: 'Value Streams',
-      sortable: true,
-      render: (value) => (
-        <Badge variant="outline" size="sm">
-          {String(value)} streams
-        </Badge>
-      ),
-    },
-    {
-      key: 'createdAt',
-      title: 'Created',
-      sortable: true,
-      render: (value) => (
-        <div className="text-sm text-secondary-600">
-          {formatDateTime(String(value))}
-        </div>
-      ),
-    },
-    {
-      key: 'updatedAt',
-      title: 'Last Updated',
-      sortable: true,
-      render: (value) => (
-        <div className="text-sm text-secondary-600">
-          {formatDateTime(String(value))}
-        </div>
-      ),
-    },
-  ];
+  // Filter domains based on search term
+  const filteredDomains = domains.filter(domain =>
+    domain.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    domain.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-secondary-900">Domain Management</h1>
-          <p className="mt-1 text-sm text-secondary-600">
-            Manage business domains for IT/OT network segmentation across manufacturing, 
-            logistics, facility, and engineering operations.
-          </p>
+    <Layout>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Domain Yönetimi</h1>
+            <p className="mt-2 text-gray-600">
+              Üretim, lojistik, tesis ve mühendislik domainlerini yönetin
+            </p>
+          </div>
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => console.log('Create domain')}
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              <PlusIcon className="h-4 w-4 mr-2" />
+              Yeni Domain
+            </button>
+          </div>
         </div>
-        <Button
-          onClick={() => setShowCreateModal(true)}
-          leftIcon={<PlusIcon className="h-4 w-4" />}
-        >
-          Add Domain
-        </Button>
-      </div>
 
-      {/* Filters */}
-      <div className="flex items-center space-x-4">
-        <div className="flex-1 max-w-md">
-          <Input
-            placeholder="Search domains..."
-            value={filters.search || ''}
-            onChange={handleSearch}
-            leftIcon={<MagnifyingGlassIcon className="h-4 w-4" />}
-          />
-        </div>
-        <Select
-          value={filters.sortBy || 'name'}
-          onChange={(value) => setFilters({ sortBy: value })}
-          options={[
-            { value: 'name', label: 'Sort by Name' },
-            { value: 'valueStreamCount', label: 'Sort by Value Streams' },
-            { value: 'createdAt', label: 'Sort by Created Date' },
-            { value: 'updatedAt', label: 'Sort by Updated Date' },
-          ]}
-        />
-      </div>
-
-      {/* Error Display */}
-      {error && (
-        <div className="rounded-md bg-error-50 border border-error-200 p-4">
-          <div className="flex">
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-error-800">Error</h3>
-              <div className="mt-2 text-sm text-error-700">{error}</div>
-              <div className="mt-4">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={clearError}
-                >
-                  Dismiss
-                </Button>
+        {/* Search */}
+        <div className="bg-white shadow rounded-lg">
+          <div className="p-6">
+            <div className="max-w-lg">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Domain ara..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                />
               </div>
             </div>
           </div>
         </div>
-      )}
 
-      {/* Domains Table */}
-      <Table
-        data={domains}
-        columns={columns}
-        loading={loading}
-        pagination={{
-          current: pagination.page,
-          pageSize: pagination.pageSize,
-          total: pagination.total,
-          onChange: (page, pageSize) => setPagination({ page, pageSize }),
-        }}
-        actions={{
-          onEdit: handleEdit,
-          onDelete: handleDelete,
-          onView: handleView,
-        }}
-      />
+        {/* Domain Cards */}
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span className="ml-3 text-gray-600">Domainler yükleniyor...</span>
+          </div>
+        ) : filteredDomains.length === 0 ? (
+          <div className="text-center py-12">
+            <BuildingOfficeIcon className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900">
+              {searchTerm ? 'Domain bulunamadı' : 'Henüz domain oluşturulmamış'}
+            </h3>
+            <p className="mt-1 text-sm text-gray-500">
+              {searchTerm ? 'Arama kriterlerinizi değiştirin.' : 'İlk domaininizi oluşturun.'}
+            </p>
+            {!searchTerm && (
+              <div className="mt-6">
+                <button
+                  onClick={() => console.log('Create domain')}
+                  className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                >
+                  <PlusIcon className="h-4 w-4 mr-2" />
+                  Domain Oluştur
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredDomains.map((domain) => (
+              <div
+                key={domain.id}
+                className="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow duration-200"
+              >
+                <div className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0">
+                        <div className="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center">
+                          <BuildingOfficeIcon className="h-6 w-6 text-blue-600" />
+                        </div>
+                      </div>
+                      <div className="ml-4">
+                        <h3 className="text-lg font-medium text-gray-900">
+                          {domain.name}
+                        </h3>
+                        <p className="text-sm text-gray-500">
+                          {domain.valueStreamCount} Value Stream
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => console.log('View domain:', domain.id)}
+                        className="text-gray-400 hover:text-gray-600"
+                      >
+                        <EyeIcon className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => console.log('Edit domain:', domain.id)}
+                        className="text-gray-400 hover:text-gray-600"
+                      >
+                        <PencilIcon className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => console.log('Delete domain:', domain.id)}
+                        className="text-gray-400 hover:text-red-600"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4">
+                    <p className="text-sm text-gray-600 line-clamp-2">
+                      {domain.description}
+                    </p>
+                  </div>
 
-      {/* Create Domain Modal */}
-      <Modal
-        isOpen={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
-        title="Create New Domain"
-        description="Add a new business domain for network organization"
-        size="md"
-      >
-        <DomainForm
-          onCancel={() => setShowCreateModal(false)}
-          mode="create"
-        />
-      </Modal>
+                  <div className="mt-4 flex items-center justify-between">
+                    <div className="text-xs text-gray-500">
+                      Oluşturulma: {formatDateTime(domain.createdAt)}
+                    </div>
+                    <Link
+                      to={`/domains/${domain.id}`}
+                      className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-500"
+                    >
+                      Detaylar
+                      <ChevronRightIcon className="ml-1 h-4 w-4" />
+                    </Link>
+                  </div>
+                </div>
 
-      {/* Edit Domain Modal */}
-      <Modal
-        isOpen={showEditModal}
-        onClose={() => setShowEditModal(false)}
-        title="Edit Domain"
-        description="Update domain information"
-        size="md"
-      >
-        {selectedDomain && (
-          <DomainForm
-            domain={selectedDomain}
-            onCancel={() => setShowEditModal(false)}
-            mode="edit"
-          />
-        )}
-      </Modal>
-
-      {/* Delete Confirmation Modal */}
-      <Modal
-        isOpen={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
-        title="Delete Domain"
-        description="This action cannot be undone"
-        size="sm"
-      >
-        <div className="space-y-4">
-          <div className="rounded-md bg-warning-50 border border-warning-200 p-4">
-            <div className="flex">
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-warning-800">
-                  Are you sure you want to delete this domain?
-                </h3>
-                <div className="mt-2 text-sm text-warning-700">
-                  {selectedDomain && (
-                    <>
-                      Domain <strong>{selectedDomain.name}</strong> and all its associated 
-                      value streams, zones, and VLANs will be permanently deleted.
-                    </>
-                  )}
+                {/* Domain Stats */}
+                <div className="bg-gray-50 px-6 py-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-500">Value Streams:</span>
+                    <span className="font-medium text-gray-900">
+                      {domain.valueStreamCount}
+                    </span>
+                  </div>
                 </div>
               </div>
+            ))}
+          </div>
+        )}
+
+        {/* Summary Stats */}
+        <div className="bg-white shadow rounded-lg">
+          <div className="px-6 py-4">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Domain Özeti</h3>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600">
+                  {domains.length}
+                </div>
+                <div className="text-sm text-gray-500">Toplam Domain</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600">
+                  {domains.reduce((sum, domain) => sum + domain.valueStreamCount, 0)}
+                </div>
+                <div className="text-sm text-gray-500">Toplam Value Stream</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-purple-600">
+                  {domains.filter(d => d.name.includes('MFG')).length}
+                </div>
+                <div className="text-sm text-gray-500">Üretim Domainleri</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-orange-600">
+                  {domains.filter(d => d.name.includes('LOG')).length}
+                </div>
+                <div className="text-sm text-gray-500">Lojistik Domainleri</div>
+              </div>
             </div>
           </div>
-
-          <div className="flex justify-end space-x-3">
-            <Button
-              variant="outline"
-              onClick={() => setShowDeleteModal(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="error"
-              onClick={confirmDelete}
-              loading={loading}
-            >
-              Delete Domain
-            </Button>
-          </div>
         </div>
-      </Modal>
-    </div>
+      </div>
+    </Layout>
   );
 };
 

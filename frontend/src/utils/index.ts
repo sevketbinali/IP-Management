@@ -1,10 +1,10 @@
 /**
- * Utility Functions for IP Management System
- * Common helper functions and utilities
+ * Utility functions for the IP Management application
  */
 
-import { type ClassValue, clsx } from 'clsx';
+import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { format, parseISO } from 'date-fns';
 
 /**
  * Combines class names using clsx and tailwind-merge
@@ -14,91 +14,63 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
- * Formats a date string to a human-readable format
+ * Format date/time strings for display
  */
 export function formatDateTime(dateString: string): string {
   try {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(date);
+    const date = parseISO(dateString);
+    return format(date, 'dd.MM.yyyy HH:mm');
   } catch (error) {
-    return 'Invalid Date';
+    return 'Invalid date';
   }
 }
 
 /**
- * Formats a date to relative time (e.g., "2 hours ago")
+ * Format date only
  */
-export function formatRelativeTime(dateString: string): string {
+export function formatDate(dateString: string): string {
   try {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-    if (diffInSeconds < 60) {
-      return 'Just now';
-    } else if (diffInSeconds < 3600) {
-      const minutes = Math.floor(diffInSeconds / 60);
-      return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
-    } else if (diffInSeconds < 86400) {
-      const hours = Math.floor(diffInSeconds / 3600);
-      return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-    } else if (diffInSeconds < 2592000) {
-      const days = Math.floor(diffInSeconds / 86400);
-      return `${days} day${days > 1 ? 's' : ''} ago`;
-    } else {
-      return formatDateTime(dateString);
-    }
+    const date = parseISO(dateString);
+    return format(date, 'dd.MM.yyyy');
   } catch (error) {
-    return 'Invalid Date';
+    return 'Invalid date';
   }
 }
 
 /**
- * Gets color class for security levels
+ * Get color classes for security levels
  */
-export function getSecurityLevelColor(level: string): string {
-  switch (level) {
+export function getSecurityLevelColor(securityType: string): string {
+  switch (securityType) {
     case 'SL3':
-      return 'bg-primary-100 text-primary-800 border-primary-200';
+      return 'bg-blue-100 text-blue-800';
     case 'MFZ_SL4':
-      return 'bg-success-100 text-success-800 border-success-200';
+      return 'bg-green-100 text-green-800';
     case 'LOG_SL4':
-      return 'bg-warning-100 text-warning-800 border-warning-200';
+      return 'bg-purple-100 text-purple-800';
     case 'FMZ_SL4':
-      return 'bg-secondary-100 text-secondary-800 border-secondary-200';
+      return 'bg-yellow-100 text-yellow-800';
     case 'ENG_SL4':
-      return 'bg-info-100 text-info-800 border-info-200';
+      return 'bg-indigo-100 text-indigo-800';
     case 'LRSZ_SL4':
-      return 'bg-error-100 text-error-800 border-error-200';
+      return 'bg-red-100 text-red-800';
     case 'RSZ_SL4':
-      return 'bg-purple-100 text-purple-800 border-purple-200';
+      return 'bg-orange-100 text-orange-800';
     default:
-      return 'bg-secondary-100 text-secondary-800 border-secondary-200';
+      return 'bg-gray-100 text-gray-800';
   }
 }
 
 /**
- * Validates IP address format
+ * Validate IP address format
  */
 export function isValidIpAddress(ip: string): boolean {
-  const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
-  if (!ipRegex.test(ip)) return false;
-  
-  const parts = ip.split('.');
-  return parts.every(part => {
-    const num = parseInt(part, 10);
-    return num >= 0 && num <= 255;
-  });
+  const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+  return ipRegex.test(ip);
 }
 
 /**
- * Validates MAC address format
+ * Validate MAC address format
  */
 export function isValidMacAddress(mac: string): boolean {
   const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
@@ -106,35 +78,103 @@ export function isValidMacAddress(mac: string): boolean {
 }
 
 /**
- * Validates VLAN ID
+ * Calculate subnet information
  */
-export function isValidVlanId(vlanId: number): boolean {
-  return vlanId >= 1 && vlanId <= 4094;
+export function calculateSubnetInfo(subnet: string, netmask: string) {
+  const subnetParts = subnet.split('.').map(Number);
+  const maskParts = netmask.split('.').map(Number);
+  
+  // Calculate network address
+  const networkParts = subnetParts.map((part, index) => part & maskParts[index]);
+  const networkAddress = networkParts.join('.');
+  
+  // Calculate broadcast address
+  const broadcastParts = networkParts.map((part, index) => part | (255 - maskParts[index]));
+  const broadcastAddress = broadcastParts.join('.');
+  
+  // Calculate total IPs (excluding network and broadcast)
+  const hostBits = maskParts.reduce((bits, octet) => {
+    return bits + (8 - octet.toString(2).split('1').length + 1);
+  }, 0);
+  const totalHosts = Math.pow(2, hostBits) - 2;
+  
+  return {
+    networkAddress,
+    broadcastAddress,
+    totalHosts,
+    firstUsableIp: networkParts.map((part, index) => 
+      index === 3 ? part + 1 : part
+    ).join('.'),
+    lastUsableIp: broadcastParts.map((part, index) => 
+      index === 3 ? part - 1 : part
+    ).join('.'),
+  };
 }
 
 /**
- * Calculates network utilization percentage
+ * Generate IP range for a subnet
  */
-export function calculateUtilization(used: number, total: number): number {
-  if (total === 0) return 0;
-  return Math.round((used / total) * 100);
+export function generateIpRange(subnet: string, netmask: string, reservedCount: number = 6): string[] {
+  const info = calculateSubnetInfo(subnet, netmask);
+  const ips: string[] = [];
+  
+  const startParts = info.firstUsableIp.split('.').map(Number);
+  const endParts = info.lastUsableIp.split('.').map(Number);
+  
+  // Skip reserved IPs at the beginning
+  startParts[3] += reservedCount;
+  
+  for (let i = startParts[3]; i <= endParts[3] - 1; i++) {
+    ips.push(`${startParts[0]}.${startParts[1]}.${startParts[2]}.${i}`);
+  }
+  
+  return ips;
 }
 
 /**
- * Generates a random ID
+ * Check if IP is in reserved range
  */
-export function generateId(): string {
-  return Math.random().toString(36).substr(2, 9);
+export function isReservedIp(ip: string, subnet: string): boolean {
+  const ipParts = ip.split('.').map(Number);
+  const subnetParts = subnet.split('.').map(Number);
+  
+  // Check if IP is in the same subnet
+  if (ipParts[0] !== subnetParts[0] || 
+      ipParts[1] !== subnetParts[1] || 
+      ipParts[2] !== subnetParts[2]) {
+    return false;
+  }
+  
+  const lastOctet = ipParts[3];
+  
+  // First 6 IPs and last IP are reserved
+  return lastOctet <= 6 || lastOctet >= 254;
 }
 
 /**
- * Debounces a function call
+ * Format bytes to human readable format
+ */
+export function formatBytes(bytes: number, decimals: number = 2): string {
+  if (bytes === 0) return '0 Bytes';
+  
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
+
+/**
+ * Debounce function for search inputs
  */
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
   let timeout: NodeJS.Timeout;
+  
   return (...args: Parameters<T>) => {
     clearTimeout(timeout);
     timeout = setTimeout(() => func(...args), wait);
@@ -142,139 +182,49 @@ export function debounce<T extends (...args: any[]) => any>(
 }
 
 /**
- * Throttles a function call
+ * Generate a random ID
  */
-export function throttle<T extends (...args: any[]) => any>(
-  func: T,
-  limit: number
-): (...args: Parameters<T>) => void {
-  let inThrottle: boolean;
-  return (...args: Parameters<T>) => {
-    if (!inThrottle) {
-      func(...args);
-      inThrottle = true;
-      setTimeout(() => (inThrottle = false), limit);
-    }
-  };
+export function generateId(): string {
+  return Math.random().toString(36).substr(2, 9);
 }
 
 /**
- * Formats file size in bytes to human readable format
+ * Copy text to clipboard
  */
-export function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes';
-  
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-}
-
-/**
- * Capitalizes the first letter of a string
- */
-export function capitalize(str: string): string {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
-/**
- * Converts camelCase to kebab-case
- */
-export function camelToKebab(str: string): string {
-  return str.replace(/([a-z0-9]|(?=[A-Z]))([A-Z])/g, '$1-$2').toLowerCase();
-}
-
-/**
- * Converts kebab-case to camelCase
- */
-export function kebabToCamel(str: string): string {
-  return str.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
-}
-
-/**
- * Truncates text to specified length with ellipsis
- */
-export function truncateText(text: string, maxLength: number): string {
-  if (text.length <= maxLength) return text;
-  return text.slice(0, maxLength) + '...';
-}
-
-/**
- * Checks if a value is empty (null, undefined, empty string, empty array, empty object)
- */
-export function isEmpty(value: any): boolean {
-  if (value == null) return true;
-  if (typeof value === 'string') return value.trim() === '';
-  if (Array.isArray(value)) return value.length === 0;
-  if (typeof value === 'object') return Object.keys(value).length === 0;
-  return false;
-}
-
-/**
- * Deep clones an object
- */
-export function deepClone<T>(obj: T): T {
-  if (obj === null || typeof obj !== 'object') return obj;
-  if (obj instanceof Date) return new Date(obj.getTime()) as any;
-  if (obj instanceof Array) return obj.map(item => deepClone(item)) as any;
-  if (typeof obj === 'object') {
-    const clonedObj = {} as any;
-    for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
-        clonedObj[key] = deepClone(obj[key]);
-      }
-    }
-    return clonedObj;
-  }
-  return obj;
-}
-
-/**
- * Sorts an array of objects by a key
- */
-export function sortBy<T>(
-  array: T[],
-  key: keyof T,
-  direction: 'asc' | 'desc' = 'asc'
-): T[] {
-  return [...array].sort((a, b) => {
-    const aVal = a[key];
-    const bVal = b[key];
+export async function copyToClipboard(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (error) {
+    // Fallback for older browsers
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
     
-    if (aVal < bVal) return direction === 'asc' ? -1 : 1;
-    if (aVal > bVal) return direction === 'asc' ? 1 : -1;
-    return 0;
-  });
+    try {
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      return true;
+    } catch (fallbackError) {
+      document.body.removeChild(textArea);
+      return false;
+    }
+  }
 }
 
 /**
- * Groups an array of objects by a key
+ * Download data as file
  */
-export function groupBy<T>(array: T[], key: keyof T): Record<string, T[]> {
-  return array.reduce((groups, item) => {
-    const group = String(item[key]);
-    groups[group] = groups[group] || [];
-    groups[group].push(item);
-    return groups;
-  }, {} as Record<string, T[]>);
-}
-
-/**
- * Filters an array of objects by search term
- */
-export function searchFilter<T>(
-  array: T[],
-  searchTerm: string,
-  searchKeys: (keyof T)[]
-): T[] {
-  if (!searchTerm.trim()) return array;
-  
-  const term = searchTerm.toLowerCase();
-  return array.filter(item =>
-    searchKeys.some(key => {
-      const value = String(item[key]).toLowerCase();
-      return value.includes(term);
-    })
-  );
+export function downloadFile(data: string, filename: string, type: string = 'text/plain'): void {
+  const blob = new Blob([data], { type });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }

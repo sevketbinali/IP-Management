@@ -1,7 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { SimpleDashboard } from '@/components/SimpleDashboard';
+import { IPManagementDashboard } from '@/components/IPManagementDashboard';
+import { DeviceManagement } from '@/components/DeviceManagement';
+import { ReportsAnalytics } from '@/components/ReportsAnalytics';
 import { DomainVlanView } from '@/components/DomainVlanView';
 import { DomainManagement } from '@/components/DomainManagement';
 
@@ -61,7 +63,7 @@ const App: React.FC = () => {
       <Router>
         <div className="min-h-screen bg-gray-50">
           <Routes>
-            <Route path="/" element={<SimpleDashboard />} />
+            <Route path="/" element={<IPManagementDashboard />} />
             <Route path="/domains" element={<DomainManagement />} />
             <Route path="/domains/:domainId" element={<DomainVlanView />} />
             <Route path="/vlans" element={
@@ -75,28 +77,9 @@ const App: React.FC = () => {
                 </div>
               </div>
             } />
-            <Route path="/ip-management" element={
-              <div className="p-6">
-                <h1 className="text-2xl font-bold text-gray-900 mb-4">IP Address Management</h1>
-                <div className="bg-white p-6 rounded-lg shadow">
-                  <p className="text-gray-600 mb-4">Manage device IP allocations and assignments</p>
-                  <div className="text-center py-8">
-                    <p className="text-gray-500">IP management interface coming soon...</p>
-                  </div>
-                </div>
-              </div>
-            } />
-            <Route path="/reports" element={
-              <div className="p-6">
-                <h1 className="text-2xl font-bold text-gray-900 mb-4">Reports & Analytics</h1>
-                <div className="bg-white p-6 rounded-lg shadow">
-                  <p className="text-gray-600 mb-4">Network analytics and compliance reports</p>
-                  <div className="text-center py-8">
-                    <p className="text-gray-500">Reporting interface coming soon...</p>
-                  </div>
-                </div>
-              </div>
-            } />
+            <Route path="/ip-management" element={<DeviceManagement />} />
+            <Route path="/ip-management/devices" element={<DeviceManagement />} />
+            <Route path="/reports" element={<ReportsAnalytics />} />
             <Route path="/settings" element={
               <div className="p-6">
                 <h1 className="text-2xl font-bold text-gray-900 mb-4">System Settings</h1>
@@ -108,7 +91,7 @@ const App: React.FC = () => {
                 </div>
               </div>
             } />
-            <Route path="*" element={<SimpleDashboard />} />
+            <Route path="*" element={<IPManagementDashboard />} />
           </Routes>
           <Toaster 
             position="top-right"

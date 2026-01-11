@@ -43,10 +43,22 @@ class DomainService {
    */
   async getDomains(params: DomainQueryParams = {}): Promise<DomainsResponse> {
     try {
-      const response = await apiClient.get<DomainsResponse>(this.basePath, params);
-      return response;
+      // Get domains from real API
+      const domains = await apiClient.get<Domain[]>(this.basePath, params);
+      
+      // Transform to expected response format
+      return {
+        data: domains,
+        meta: {
+          pagination: {
+            page: params.page || 1,
+            pageSize: params.pageSize || 50,
+            total: domains.length,
+          },
+        },
+      };
     } catch (error) {
-      // For development, return mock data
+      console.warn('Failed to fetch domains from API, using mock data:', error);
       return this.getMockDomains(params);
     }
   }
@@ -56,9 +68,10 @@ class DomainService {
    */
   async getDomain(id: string): Promise<ApiResponse<Domain>> {
     try {
-      return await apiClient.get<ApiResponse<Domain>>(`${this.basePath}/${id}`);
+      const domain = await apiClient.get<Domain>(`${this.basePath}/${id}`);
+      return { data: domain };
     } catch (error) {
-      // For development, return mock data
+      console.warn('Failed to fetch domain from API, using mock data:', error);
       return this.getMockDomain(id);
     }
   }
@@ -68,9 +81,10 @@ class DomainService {
    */
   async createDomain(data: DomainFormData): Promise<ApiResponse<Domain>> {
     try {
-      return await apiClient.post<ApiResponse<Domain>>(this.basePath, data);
+      const domain = await apiClient.post<Domain>(this.basePath, data);
+      return { data: domain, message: 'Domain created successfully' };
     } catch (error) {
-      // For development, simulate creation
+      console.warn('Failed to create domain via API, using mock:', error);
       return this.createMockDomain(data);
     }
   }
