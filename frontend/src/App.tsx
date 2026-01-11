@@ -1,9 +1,14 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { Layout } from '@/components/Layout';
 import { IPManagementDashboard } from '@/components/IPManagementDashboard';
+import { IPAllocationTable } from '@/components/IPAllocationTable';
+import { DomainVLANPanel } from '@/components/DomainVLANPanel';
+import { IPAssignmentForm } from '@/components/IPAssignmentForm';
+import { SystemConfiguration } from '@/components/SystemConfiguration';
 import { DeviceManagement } from '@/components/DeviceManagement';
-import { ReportsAnalytics } from '@/components/ReportsAnalytics';
+import { EnhancedAnalytics } from '@/components/EnhancedAnalytics';
 import { DomainVlanView } from '@/components/DomainVlanView';
 import { DomainManagement } from '@/components/DomainManagement';
 
@@ -21,11 +26,11 @@ class ErrorBoundary extends React.Component<
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+  override componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('App Error:', error, errorInfo);
   }
 
-  render() {
+  override render() {
     if (this.state.hasError) {
       return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -61,25 +66,18 @@ const App: React.FC = () => {
   return (
     <ErrorBoundary>
       <Router>
-        <div className="min-h-screen bg-gray-50">
+        <Layout>
           <Routes>
             <Route path="/" element={<IPManagementDashboard />} />
             <Route path="/domains" element={<DomainManagement />} />
             <Route path="/domains/:domainId" element={<DomainVlanView />} />
-            <Route path="/vlans" element={
-              <div className="p-6">
-                <h1 className="text-2xl font-bold text-gray-900 mb-4">VLAN Management</h1>
-                <div className="bg-white p-6 rounded-lg shadow">
-                  <p className="text-gray-600 mb-4">Configure network segmentation and VLAN settings</p>
-                  <div className="text-center py-8">
-                    <p className="text-gray-500">VLAN configuration interface coming soon...</p>
-                  </div>
-                </div>
-              </div>
-            } />
+            <Route path="/vlans" element={<DomainVLANPanel />} />
+            <Route path="/ip-allocation" element={<IPAllocationTable />} />
+            <Route path="/ip-assignment" element={<IPAssignmentForm />} />
             <Route path="/ip-management" element={<DeviceManagement />} />
             <Route path="/ip-management/devices" element={<DeviceManagement />} />
-            <Route path="/reports" element={<ReportsAnalytics />} />
+            <Route path="/system" element={<SystemConfiguration />} />
+            <Route path="/reports" element={<EnhancedAnalytics />} />
             <Route path="/settings" element={
               <div className="p-6">
                 <h1 className="text-2xl font-bold text-gray-900 mb-4">System Settings</h1>
@@ -93,17 +91,17 @@ const App: React.FC = () => {
             } />
             <Route path="*" element={<IPManagementDashboard />} />
           </Routes>
-          <Toaster 
-            position="top-right"
-            toastOptions={{
-              duration: 4000,
-              style: {
-                background: '#363636',
-                color: '#fff',
-              },
-            }}
-          />
-        </div>
+        </Layout>
+        <Toaster 
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#363636',
+              color: '#fff',
+            },
+          }}
+        />
       </Router>
     </ErrorBoundary>
   );

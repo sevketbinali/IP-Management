@@ -14,6 +14,9 @@ import {
   ChartBarIcon,
   CogIcon,
   BuildingOfficeIcon,
+  TableCellsIcon,
+  PlusIcon,
+  Cog6ToothIcon,
 } from '@heroicons/react/24/outline';
 import { cn } from '@/utils';
 
@@ -22,17 +25,136 @@ interface LayoutProps {
 }
 
 const navigation = [
-  { name: 'Dashboard', href: '/', icon: HomeIcon },
-  { name: 'Domains', href: '/domains', icon: BuildingOfficeIcon },
-  { name: 'VLAN Management', href: '/vlans', icon: ServerIcon },
-  { name: 'IP Management', href: '/ip-management', icon: GlobeAltIcon },
-  { name: 'Reports', href: '/reports', icon: ChartBarIcon },
-  { name: 'Settings', href: '/settings', icon: CogIcon },
+  { name: 'Dashboard', href: '/', icon: HomeIcon, description: 'System overview and statistics' },
+  { 
+    name: 'IP Management', 
+    icon: GlobeAltIcon,
+    children: [
+      { name: 'IP Allocation Table', href: '/ip-allocation', icon: TableCellsIcon, description: 'View and manage all IP assignments' },
+      { name: 'Device Assignment', href: '/ip-assignment', icon: PlusIcon, description: 'Assign IPs to new devices' },
+      { name: 'Device Management', href: '/ip-management', icon: GlobeAltIcon, description: 'Manage registered devices' },
+    ]
+  },
+  { 
+    name: 'Network Configuration', 
+    icon: ServerIcon,
+    children: [
+      { name: 'Domains', href: '/domains', icon: BuildingOfficeIcon, description: 'Manage business domains' },
+      { name: 'VLAN Management', href: '/vlans', icon: ServerIcon, description: 'Configure network segmentation' },
+    ]
+  },
+  { name: 'Reports & Analytics', href: '/reports', icon: ChartBarIcon, description: 'Network usage and compliance reports' },
+  { name: 'System Configuration', href: '/system', icon: Cog6ToothIcon, description: 'System health and settings' },
+  { name: 'Settings', href: '/settings', icon: CogIcon, description: 'Application preferences' },
 ];
 
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [expandedSections, setExpandedSections] = useState<string[]>(['IP Management', 'Network Configuration']);
   const location = useLocation();
+
+  const toggleSection = (sectionName: string) => {
+    setExpandedSections(prev => 
+      prev.includes(sectionName) 
+        ? prev.filter(name => name !== sectionName)
+        : [...prev, sectionName]
+    );
+  };
+
+  const isActiveRoute = (href: string) => {
+    return location.pathname === href || 
+      (href !== '/' && location.pathname.startsWith(href));
+  };
+
+  const renderNavigationItem = (item: any, isMobile: boolean = false) => {
+    if (item.children) {
+      const isExpanded = expandedSections.includes(item.name);
+      const hasActiveChild = item.children.some((child: any) => isActiveRoute(child.href));
+      
+      return (
+        <div key={item.name}>
+          <button
+            onClick={() => toggleSection(item.name)}
+            className={cn(
+              'group flex items-center w-full px-2 py-2 text-sm font-medium rounded-md',
+              hasActiveChild || isExpanded
+                ? 'bg-blue-100 text-blue-900'
+                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+            )}
+          >
+            <item.icon
+              className={cn(
+                'mr-3 flex-shrink-0 h-5 w-5',
+                hasActiveChild || isExpanded ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'
+              )}
+            />
+            <span className="flex-1 text-left">{item.name}</span>
+            <svg
+              className={cn(
+                'ml-3 h-4 w-4 transition-transform',
+                isExpanded ? 'rotate-90' : ''
+              )}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+          
+          {isExpanded && (
+            <div className="mt-1 space-y-1">
+              {item.children.map((child: any) => (
+                <Link
+                  key={child.href}
+                  to={child.href}
+                  className={cn(
+                    'group flex items-center pl-8 pr-2 py-2 text-sm font-medium rounded-md',
+                    isActiveRoute(child.href)
+                      ? 'bg-blue-200 text-blue-900'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  )}
+                  onClick={() => isMobile && setSidebarOpen(false)}
+                  title={child.description}
+                >
+                  <child.icon
+                    className={cn(
+                      'mr-3 flex-shrink-0 h-4 w-4',
+                      isActiveRoute(child.href) ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'
+                    )}
+                  />
+                  {child.name}
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <Link
+        key={item.href}
+        to={item.href}
+        className={cn(
+          'group flex items-center px-2 py-2 text-sm font-medium rounded-md',
+          isActiveRoute(item.href)
+            ? 'bg-blue-100 text-blue-900'
+            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+        )}
+        onClick={() => isMobile && setSidebarOpen(false)}
+        title={item.description}
+      >
+        <item.icon
+          className={cn(
+            'mr-3 flex-shrink-0 h-5 w-5',
+            isActiveRoute(item.href) ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'
+          )}
+        />
+        {item.name}
+      </Link>
+    );
+  };
 
   return (
     <div className="h-screen flex overflow-hidden bg-gray-100">
@@ -57,31 +179,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               <h1 className="text-xl font-bold text-gray-900">IP Management</h1>
             </div>
             <nav className="mt-5 px-2 space-y-1">
-              {navigation.map((item) => {
-                const isActive = location.pathname === item.href || 
-                  (item.href !== '/' && location.pathname.startsWith(item.href));
-                return (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    className={cn(
-                      'group flex items-center px-2 py-2 text-base font-medium rounded-md',
-                      isActive
-                        ? 'bg-blue-100 text-blue-900'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                    )}
-                    onClick={() => setSidebarOpen(false)}
-                  >
-                    <item.icon
-                      className={cn(
-                        'mr-4 flex-shrink-0 h-6 w-6',
-                        isActive ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'
-                      )}
-                    />
-                    {item.name}
-                  </Link>
-                );
-              })}
+              {navigation.map((item) => renderNavigationItem(item, true))}
             </nav>
           </div>
         </div>
@@ -96,30 +194,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <h1 className="text-xl font-bold text-gray-900">IP Management</h1>
               </div>
               <nav className="mt-5 flex-1 px-2 bg-white space-y-1">
-                {navigation.map((item) => {
-                  const isActive = location.pathname === item.href || 
-                    (item.href !== '/' && location.pathname.startsWith(item.href));
-                  return (
-                    <Link
-                      key={item.name}
-                      to={item.href}
-                      className={cn(
-                        'group flex items-center px-2 py-2 text-sm font-medium rounded-md',
-                        isActive
-                          ? 'bg-blue-100 text-blue-900'
-                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                      )}
-                    >
-                      <item.icon
-                        className={cn(
-                          'mr-3 flex-shrink-0 h-5 w-5',
-                          isActive ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'
-                        )}
-                      />
-                      {item.name}
-                    </Link>
-                  );
-                })}
+                {navigation.map((item) => renderNavigationItem(item))}
               </nav>
             </div>
             <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
