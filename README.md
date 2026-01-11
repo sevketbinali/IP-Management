@@ -12,48 +12,48 @@
 
 ---
 
-## 📋 İçindekiler
+## 📋 Table of Contents
 
-- [🎯 Genel Bakış](#-genel-bakış)
-- [🏗️ Sistem Mimarisi](#️-sistem-mimarisi)
-- [🔧 Teknoloji Stack](#-teknoloji-stack)
-- [🚀 Hızlı Başlangıç](#-hızlı-başlangıç)
-- [🐳 Docker ile Kurulum](#-docker-ile-kurulum)
-- [📊 Network Yapısı](#-network-yapısı)
-- [🖥️ Kullanıcı Arayüzü](#️-kullanıcı-arayüzü)
-- [🔧 Geliştirme](#-geliştirme)
-- [📡 API Dokümantasyonu](#-api-dokümantasyonu)
-- [🔒 Güvenlik Özellikleri](#-güvenlik-özellikleri)
+- [🎯 Overview](#-overview)
+- [🏗️ System Architecture](#️-system-architecture)
+- [🔧 Technology Stack](#-technology-stack)
+- [🚀 Quick Start](#-quick-start)
+- [🐳 Docker Installation](#-docker-installation)
+- [📊 Network Structure](#-network-structure)
+- [🖥️ User Interface](#️-user-interface)
+- [🔧 Development](#-development)
+- [📡 API Documentation](#-api-documentation)
+- [🔒 Security Features](#-security-features)
 - [🚀 Production Deployment](#-production-deployment)
-- [🛠️ Sorun Giderme](#️-sorun-giderme)
-- [📚 Dokümantasyon](#-dokümantasyon)
+- [🛠️ Troubleshooting](#️-troubleshooting)
+- [📚 Documentation](#-documentation)
 
 ---
 
-## 🎯 Genel Bakış
+## 🎯 Overview
 
-**Bosch Rexroth Bursa Fabrikası** için özel olarak tasarlanmış kapsamlı IP yönetim sistemi. IT/OT ağ altyapısında merkezi IP adresi tahsisi, VLAN segmentasyonu ve güvenlik bölgesi yönetimi sağlar.
+Comprehensive IP management system designed for industrial IT/OT network infrastructure. Provides centralized IP address allocation, VLAN segmentation, and security zone management across manufacturing, logistics, facility, and engineering domains.
 
-### ✨ Temel Özellikler
+### ✨ Key Features
 
-- **🏢 Hiyerarşik Ağ Yönetimi**: Domain → Value Stream → Zone → VLAN → IP yapısı
-- **🤖 Otomatik IP Tahsisi**: Rezerve yönetim IP koruması ile akıllı IP üretimi (ilk 6 + son IP)
-- **🛡️ Güvenlik Bölgesi Uyumluluğu**: Bosch Rexroth güvenlik standartları (SL3, MFZ_SL4, LOG_SL4, vb.)
-- **🎨 Endüstriyel UI**: IT/OT ağ operasyonları için optimize edilmiş React/TypeScript arayüzü
-- **⚡ Gerçek Zamanlı Doğrulama**: Sunucu tarafı tutarlılığı ile istemci tarafı doğrulaması
-- **📋 Denetim & Uyumluluk**: Tam denetim izi ve güvenlik uyumluluk raporlaması
-- **🏭 Çoklu Tesis Ölçeklenebilirliği**: Ek Bosch tesisleri için genişleme tasarımı
+- **🏢 Hierarchical Network Management**: Domain → Value Stream → Zone → VLAN → IP structure
+- **🤖 Automatic IP Allocation**: Smart IP generation with reserved management IP protection (first 6 + last IP)
+- **🛡️ Security Zone Compliance**: Industrial security standards (SL3, MFZ_SL4, LOG_SL4, etc.)
+- **🎨 Industrial UI**: React/TypeScript interface optimized for IT/OT network operations
+- **⚡ Real-time Validation**: Client-side validation with server-side consistency
+- **📋 Audit & Compliance**: Complete audit trail and security compliance reporting
+- **🏭 Multi-Plant Scalability**: Designed for expansion to additional industrial facilities
 
-### 🏭 Hedef Ortam
+### 🏭 Target Environment
 
-- **Manufacturing (MFG)**: A2, A4, A6, A10, MCO üretim hatları
-- **Logistics (LOG)**: LOG21 depo sistemleri
-- **Facility (FCM)**: Analizörler, kameralar, bina sistemleri
-- **Engineering (ENG)**: Mühendislik test tezgahları
+- **Manufacturing**: Production lines and manufacturing equipment
+- **Logistics**: Warehouse systems and logistics infrastructure
+- **Facility**: Analyzers, cameras, and building management systems
+- **Engineering**: Engineering test benches and development systems
 
 ---
 
-## 🏗️ Sistem Mimarisi
+## 🏗️ System Architecture
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
@@ -64,419 +64,418 @@
 └─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
-### 🐳 Docker Servisleri
+### 🐳 Docker Services
 
-| Servis | Port | Açıklama | Health Check |
-|--------|------|----------|--------------|
-| **PostgreSQL** | 5432 | Ana veritabanı | `pg_isready` |
-| **Redis** | 6379 | Önbellek ve oturum | `redis-cli ping` |
+| Service | Port | Description | Health Check |
+|---------|------|-------------|--------------|
+| **PostgreSQL** | 5432 | Main database | `pg_isready` |
+| **Redis** | 6379 | Cache and sessions | `redis-cli ping` |
 | **FastAPI** | 8000 | Backend API | `curl /health` |
-| **React Frontend** | 3000 | Web arayüzü | `curl /` |
+| **React Frontend** | 3000 | Web interface | `curl /` |
 | **Nginx** | 80/443 | Reverse proxy | `curl /health` |
 
 ---
 
-## 🔧 Teknoloji Stack
+## 🔧 Technology Stack
 
 ### 🎨 Frontend
 - **React 18** - Modern UI framework with hooks
 - **TypeScript 5.0+** - Type-safe development
-- **Tailwind CSS** - Endüstriyel utility-first styling
-- **Zustand** - Hafif state management
-- **React Hook Form + Zod** - Form işleme ve doğrulama
-- **Axios** - Retry logic ve caching ile HTTP client
-- **Vite** - Hızlı geliştirme ve optimize build
+- **Tailwind CSS** - Industrial utility-first styling
+- **Zustand** - Lightweight state management
+- **React Hook Form + Zod** - Form handling and validation
+- **Axios** - HTTP client with retry logic and caching
+- **Vite** - Fast development and optimized builds
 
 ### ⚙️ Backend
-- **Python 3.11+** - Ana geliştirme dili
-- **FastAPI** - Yüksek performanslı async API framework
-- **SQLAlchemy 2.0** - Async desteği ile modern ORM
-- **PostgreSQL 15** - Network data types ile enterprise veritabanı
-- **Alembic** - Veritabanı migration yönetimi
-- **Pydantic** - Data validation ve serialization
+- **Python 3.11+** - Core development language
+- **FastAPI** - High-performance async API framework
+- **SQLAlchemy 2.0** - Modern ORM with async support
+- **PostgreSQL 15** - Enterprise database with network data types
+- **Alembic** - Database migration management
+- **Pydantic** - Data validation and serialization
 
 ### 🏗️ Infrastructure
 - **Docker & Docker Compose** - Containerized deployment
-- **Nginx** - Reverse proxy ve load balancing
-- **Redis** - Caching ve session management
-- **UV** - Hızlı Python package management
+- **Nginx** - Reverse proxy and load balancing
+- **Redis** - Caching and session management
+- **UV** - Fast Python package management
 
 ---
 
-## 🚀 Hızlı Başlangıç
+## 🚀 Quick Start
 
-### 📋 Gereksinimler
+### 📋 Prerequisites
 
-- **Docker & Docker Compose** (Önerilen - yerel kurulum gerektirmez)
-- VEYA: Python 3.11+, Node.js 18+, PostgreSQL 15+
+- **Docker & Docker Compose** (Recommended - no local setup required)
+- OR: Python 3.11+, Node.js 18+, PostgreSQL 15+
 
-### 🐳 Docker ile Kurulum (Önerilen)
+### 🐳 Docker Installation (Recommended)
 
 ```bash
-# Repository'yi klonlayın
+# Clone repository
 git clone https://github.com/your-org/ip-management.git
 cd ip-management
 
-# Environment konfigürasyonunu kopyalayın
+# Copy environment configuration
 cp .env.example .env
-# .env dosyasını konfigürasyonunuzla düzenleyin
+# Edit .env with your configuration
 
-# Tüm servisleri başlatın
+# Start all services
 docker-compose up -d
 
-# Örnek veri başlatın (opsiyonel)
+# Initialize sample data (optional)
 docker-compose exec api python scripts/init-sample-data.py
 
-# Uygulamaya erişin
+# Access the application
 # Frontend: http://localhost:3000
 # API Docs: http://localhost:8000/api/docs
 ```
 
-### 💻 Yerel Geliştirme
+### 💻 Local Development
 
 ```bash
-# Backend kurulumu
+# Backend setup
 pip install uv
 uv sync
 cp .env.example .env
-# .env dosyasını veritabanı bilgilerinizle düzenleyin
+# Edit .env with your database credentials
 python scripts/run_dev.py
 
-# Frontend kurulumu (yeni terminal)
+# Frontend setup (new terminal)
 cd frontend
 npm install
 cp .env.example .env
-# .env dosyasını API URL'inizle düzenleyin
+# Edit .env with your API URL
 npm run dev
 
-# Uygulamaya erişin
+# Access the application
 # Frontend: http://localhost:5173
 # Backend: http://localhost:8000
 ```
 
 ---
 
-## 🐳 Docker ile Kurulum
+## 🐳 Docker Installation
 
-### 🚀 Tek Komutla Başlatma
+### 🚀 One-Command Startup
 
 ```bash
-# Tüm servisleri arka planda başlat
+# Start all services in background
 docker-compose up -d
 
-# Servislerin durumunu kontrol et
+# Check service status
 docker-compose ps
 ```
 
-### 📊 Servis Durumu Kontrolü
+### 📊 Service Status Check
 
 ```bash
-# Tüm servislerin sağlık durumunu kontrol et
+# Check health status of all services
 docker-compose ps
 
-# Belirli bir servisin loglarını görüntüle
+# View logs for specific service
 docker-compose logs -f api          # Backend logs
 docker-compose logs -f frontend     # Frontend logs
 docker-compose logs -f postgres     # Database logs
 docker-compose logs -f redis        # Cache logs
 
-# Gerçek zamanlı tüm logları takip et
+# Follow all logs in real-time
 docker-compose logs -f
 ```
 
-### 🔧 Servis Yönetimi
+### 🔧 Service Management
 
 ```bash
-# Belirli servisleri yeniden başlat
+# Restart specific services
 docker-compose restart api frontend
 
-# Servisleri durdur
+# Stop services
 docker-compose stop
 
-# Servisleri tamamen kaldır (veriler korunur)
+# Remove services completely (data preserved)
 docker-compose down
 
-# Servisleri ve volumeleri tamamen kaldır (VERİ SİLİNİR!)
+# Remove services and volumes (DATA WILL BE LOST!)
 docker-compose down -v
 ```
 
-### 🛠️ Sorun Giderme Komutları
+### 🛠️ Troubleshooting Commands
 
-#### Database Bağlantı Sorunları
+#### Database Connection Issues
 ```bash
-# PostgreSQL servisinin durumunu kontrol et
+# Check PostgreSQL service status
 docker-compose exec postgres pg_isready -U postgres
 
-# Database'e manuel bağlan
+# Connect to database manually
 docker-compose exec postgres psql -U postgres -d ip_management
 
-# Database loglarını kontrol et
+# Check database logs
 docker-compose logs postgres
 ```
 
-#### API Servisi Sorunları
+#### API Service Issues
 ```bash
 # API health check
 curl http://localhost:8000/health
 
-# API container'ına bağlan
+# Connect to API container
 docker-compose exec api bash
 
-# Migration durumunu kontrol et
+# Check migration status
 docker-compose exec api alembic current
 
-# Migration çalıştır
+# Run migrations
 docker-compose exec api alembic upgrade head
 ```
 
-#### Frontend Sorunları
+#### Frontend Issues
 ```bash
-# Frontend build durumunu kontrol et
+# Check frontend build status
 docker-compose logs frontend
 
-# Frontend container'ına bağlan
+# Connect to frontend container
 docker-compose exec frontend sh
 
-# Nginx konfigürasyonunu test et
+# Test nginx configuration
 docker-compose exec frontend nginx -t
 ```
 
-#### Redis Cache Sorunları
+#### Redis Cache Issues
 ```bash
-# Redis bağlantısını test et
+# Test Redis connection
 docker-compose exec redis redis-cli ping
 
-# Cache içeriğini görüntüle
+# View cache contents
 docker-compose exec redis redis-cli keys "*"
 
-# Cache'i temizle
+# Clear cache
 docker-compose exec redis redis-cli flushall
 ```
 
-### 🔄 Servis Yeniden Başlatma Sırası
+### 🔄 Service Restart Order
 
-Eğer servislerde sorun yaşıyorsanız, aşağıdaki sırayla yeniden başlatın:
+If experiencing service issues, restart in this order:
 
 ```bash
-# 1. Önce database ve cache servislerini başlat
+# 1. Start database and cache services first
 docker-compose up -d postgres redis
 
-# 2. Database'in hazır olmasını bekle
+# 2. Wait for database to be ready
 docker-compose exec postgres pg_isready -U postgres
 
-# 3. Backend API'yi başlat
+# 3. Start backend API
 docker-compose up -d api
 
-# 4. API'nin hazır olmasını bekle
+# 4. Wait for API to be ready
 curl -f http://localhost:8000/health
 
-# 5. Frontend'i başlat
+# 5. Start frontend
 docker-compose up -d frontend
 
-# 6. Nginx'i başlat (production için)
+# 6. Start nginx (for production)
 docker-compose --profile production up -d nginx
 ```
 
 ---
 
-## 📊 Network Yapısı
+## 📊 Network Structure
 
-Sistem, hiyerarşik yaklaşım kullanarak ağ altyapısını yönetir:
+The system manages network infrastructure using a hierarchical approach:
 
 ```
-🏢 Domains (İş Alanları)
-├── 🏭 MFG (Manufacturing)
-│   ├── 🔧 A2, A4, A6, A10, MCO (Üretim Hatları)
-│   └── 🛡️ Güvenlik Bölgeleri (MFZ_SL4, SL3)
-├── 📦 LOG (Logistics)
-│   ├── 🚛 LOG21 (Depo Sistemleri)
-│   └── 🛡️ Güvenlik Bölgeleri (LOG_SL4)
-├── 🏢 FCM (Facility Management)
-│   ├── 🔬 Analizörler, 📹 Kameralar, 🏠 Bina Sistemleri
-│   └── 🛡️ Güvenlik Bölgeleri (FMZ_SL4)
-└── 🔬 ENG (Engineering)
-    ├── 🧪 Test Tezgahları
-    └── 🛡️ Güvenlik Bölgeleri (ENG_SL4, LRSZ_SL4, RSZ_SL4)
+🏢 Domains (Business Areas)
+├── 🏭 Manufacturing
+│   ├── 🔧 Production Lines
+│   └── 🛡️ Security Zones (MFZ_SL4, SL3)
+├── 📦 Logistics
+│   ├── 🚛 Warehouse Systems
+│   └── 🛡️ Security Zones (LOG_SL4)
+├── 🏢 Facility
+│   ├── 🔬 Analyzers, 📹 Cameras, 🏠 Building Systems
+│   └── 🛡️ Security Zones (FMZ_SL4)
+└── 🔬 Engineering
+    ├── 🧪 Test Benches
+    └── 🛡️ Security Zones (ENG_SL4, LRSZ_SL4, RSZ_SL4)
 ```
 
-### 🛡️ Güvenlik Sınıflandırmaları
+### 🛡️ Security Classifications
 
-| Kod | Açıklama | Kullanım Alanı |
-|-----|----------|----------------|
-| **SL3** | Secure BCN | Ofis Ağı, Sunucu Ağı |
-| **MFZ_SL4** | Manufacturing Zone | Üretim Bölgesi |
-| **LOG_SL4** | Logistics Zone | Lojistik Bölgesi |
-| **FMZ_SL4** | Facility Zone | Tesis Bölgesi |
-| **ENG_SL4** | Engineering Zone | Mühendislik Bölgesi |
-| **LRSZ_SL4** | Local Restricted Zone | Nexeed MES, SQL, Docker |
-| **RSZ_SL4** | Restricted Zone | Kısıtlı Bölge |
+| Code | Description | Use Case |
+|------|-------------|----------|
+| **SL3** | Secure BCN | Office Network, Server Network |
+| **MFZ_SL4** | Manufacturing Zone | Production Area |
+| **LOG_SL4** | Logistics Zone | Logistics Area |
+| **FMZ_SL4** | Facility Zone | Facility Area |
+| **ENG_SL4** | Engineering Zone | Engineering Area |
+| **LRSZ_SL4** | Local Restricted Zone | MES Zone, SQL Zone, Docker Zone |
+| **RSZ_SL4** | Restricted Zone | Restricted Area |
 
-### 🔒 Rezerve IP Koruması
+### 🔒 Reserved IP Protection
 
-Sistem otomatik olarak ağ yönetimi IP'lerini rezerve eder:
-- **İlk 6 IP**: Ağ altyapısı için rezerve (router, switch, vb.)
-- **Son IP**: Broadcast/yönetim amaçları için rezerve
-- **Görsel Göstergeler**: Frontend rezerve IP'leri açıkça tahsis edilemez olarak işaretler
-- **Doğrulama**: Hem istemci hem sunucu rezerve IP tahsisini engeller
+The system automatically reserves network management IPs:
+- **First 6 IPs**: Reserved for network infrastructure (routers, switches, etc.)
+- **Last IP**: Reserved for broadcast/management purposes
+- **Visual Indicators**: Frontend clearly marks reserved IPs as non-assignable
+- **Validation**: Both client and server prevent allocation of reserved IPs
 
 ---
 
-## 🖥️ Kullanıcı Arayüzü
+## 🖥️ User Interface
 
-### 🎨 Endüstriyel Frontend Özellikleri
+### 🎨 Industrial Frontend Features
 
-- **👨‍💼 Operatör Odaklı Tasarım**: Ağ yöneticileri ve teknisyenler için optimize
-- **📱 Responsive Layout**: Üretim ortamlarında masaüstü ve tablet cihazlarda çalışır
-- **⚡ Gerçek Zamanlı Doğrulama**: Ağ konfigürasyon hatalarında anında geri bildirim
-- **♿ Erişilebilirlik**: Klavye navigasyonu ve ekran okuyucu desteği ile WCAG AAA uyumlu
-- **🚀 Performans**: Pagination ve virtual scrolling ile büyük veri setleri için optimize
+- **👨‍💼 Operator-Focused Design**: Optimized for network administrators and technicians
+- **📱 Responsive Layout**: Works on desktop and tablet devices in production environments
+- **⚡ Real-time Validation**: Immediate feedback on network configuration errors
+- **♿ Accessibility**: WCAG AAA compliant with keyboard navigation and screen reader support
+- **🚀 Performance**: Optimized for large datasets with pagination and virtual scrolling
 
-### 🧭 Ana Arayüz Bölümleri
+### 🧭 Main Interface Sections
 
-1. **📊 Dashboard**: Sistem genel bakış, sağlık izleme ve hızlı eylemler
-2. **🏢 Domain Yönetimi**: İş domainlerini oluştur ve yönet (MFG, LOG, FCM, ENG)
-3. **🔧 VLAN Yönetimi**: Otomatik IP aralığı hesaplaması ile VLAN konfigürasyonu
-4. **📋 IP Yönetimi**: MAC adresi takibi ile cihazlara IP adresi tahsisi
-5. **📈 Raporlar**: Ağ hiyerarşisi görselleştirme ve uyumluluk raporlaması
+1. **📊 Dashboard**: System overview, health monitoring, and quick actions
+2. **🏢 Domain Management**: Create and manage business domains (Manufacturing, Logistics, Facility, Engineering)
+3. **🔧 VLAN Management**: Configure VLANs with automatic IP range calculation
+4. **📋 IP Management**: Assign IP addresses to devices with MAC address tracking
+5. **📈 Reports**: Network hierarchy visualization and compliance reporting
 
-### 🎯 Kullanıcı Arayüzü Özellikleri
+### 🎯 User Interface Features
 
-- **🔧 Domain İkonları**: MFG(🔧), LOG(🚛), FCM(🏢), ENG(🧪)
-- **📊 OT-Spesifik KPI'lar**: 
-  - Aktif OT Cihazları: 1,247
-  - Kayıtlı OT Cihazları: 1,389
-  - Aktif IP'ler: 892
-  - Bilinmeyen Cihazlar: 142
-- **🇹🇷 Türkçe Arayüz**: Bosch Rexroth fabrikası için tam Türkçe destek
-- **🎨 Endüstriyel Tasarım**: Renk kodlu elementler ve tooltips
+- **🔧 Domain Icons**: Manufacturing(🔧), Logistics(🚛), Facility(🏢), Engineering(🧪)
+- **📊 Industrial KPIs**: 
+  - Active OT Devices: 1,247
+  - Registered OT Devices: 1,389
+  - Active IPs: 892
+  - Unknown Devices: 142
+- **🎨 Industrial Design**: Color-coded elements and tooltips
 
 ---
 
-## 🔧 Geliştirme
+## 🔧 Development
 
-### 🧪 Testleri Çalıştırma
+### 🧪 Running Tests
 
 ```bash
-# Backend testleri
+# Backend tests
 uv run pytest tests/ -v --cov=src
 
-# Frontend testleri
+# Frontend tests
 cd frontend
-npm test                    # Unit testler
-npm run test:coverage      # Coverage raporu
-npm run test:property      # Property-based testler
-npm run test:e2e          # End-to-end testler
+npm test                    # Unit tests
+npm run test:coverage      # Coverage report
+npm run test:property      # Property-based tests
+npm run test:e2e          # End-to-end tests
 
-# Canlı test dashboard'u
+# Live test dashboard
 python scripts/live_test_runner.py
-# http://localhost:8080 adresinde test sonuçlarını görüntüle
+# View test results at http://localhost:8080
 ```
 
-### 📏 Kod Kalitesi
+### 📏 Code Quality
 
 ```bash
-# Python linting ve formatting
+# Python linting and formatting
 uv run ruff check src/
 uv run ruff format src/
 uv run mypy src/
 
-# TypeScript kontrolü
+# TypeScript checking
 cd frontend
 npm run type-check
 npm run lint
 npm run lint:fix
 ```
 
-### 🗃️ Veritabanı Migration'ları
+### 🗃️ Database Migrations
 
 ```bash
-# Yeni migration oluştur
-alembic revision --autogenerate -m "Açıklama"
+# Create new migration
+alembic revision --autogenerate -m "Description"
 
-# Migration'ları uygula
+# Apply migrations
 alembic upgrade head
 
-# Migration geri al
+# Rollback migration
 alembic downgrade -1
 
-# Migration geçmişini görüntüle
+# View migration history
 alembic history
 
-# Mevcut migration durumunu kontrol et
+# Check current migration status
 alembic current
 ```
 
-### 🔄 Geliştirme Workflow'u
+### 🔄 Development Workflow
 
 ```bash
-# 1. Yeni özellik branch'i oluştur
-git checkout -b feature/yeni-ozellik
+# 1. Create new feature branch
+git checkout -b feature/new-feature
 
-# 2. Değişiklikleri yap ve test et
-npm test                    # Frontend testleri
-uv run pytest             # Backend testleri
+# 2. Make changes and test
+npm test                    # Frontend tests
+uv run pytest             # Backend tests
 
-# 3. Kod kalitesini kontrol et
+# 3. Check code quality
 npm run lint               # Frontend linting
 uv run ruff check src/     # Backend linting
 
-# 4. Commit ve push
+# 4. Commit and push
 git add .
-git commit -m "feat: yeni özellik eklendi"
-git push origin feature/yeni-ozellik
+git commit -m "feat: add new feature"
+git push origin feature/new-feature
 
-# 5. Pull request oluştur
+# 5. Create pull request
 ```
 
 ---
 
-## 📡 API Dokümantasyonu
+## 📡 API Documentation
 
-Çalıştıktan sonra, interaktif API dokümantasyonuna erişin:
+Once running, access the interactive API documentation:
 
 - **Swagger UI**: http://localhost:8000/api/docs
 - **ReDoc**: http://localhost:8000/api/redoc
 - **OpenAPI JSON**: http://localhost:8000/api/openapi.json
 
-### 🔑 Ana Endpoint'ler
+### 🔑 Main Endpoints
 
 ```bash
-# Domain Yönetimi
-POST   /api/v1/domains              # Domain oluştur
-GET    /api/v1/domains              # Domain listesi
-PUT    /api/v1/domains/{id}         # Domain güncelle
-DELETE /api/v1/domains/{id}         # Domain sil
+# Domain Management
+POST   /api/v1/domains              # Create domain
+GET    /api/v1/domains              # List domains
+PUT    /api/v1/domains/{id}         # Update domain
+DELETE /api/v1/domains/{id}         # Delete domain
 
-# VLAN Yönetimi
-POST   /api/v1/vlans                # Otomatik IP hesaplaması ile VLAN oluştur
-GET    /api/v1/vlans                # VLAN listesi
-POST   /api/v1/vlans/validate       # VLAN konfigürasyonu doğrula
-POST   /api/v1/vlans/calculate      # VLAN parametrelerini önizle
+# VLAN Management
+POST   /api/v1/vlans                # Create VLAN with auto IP calculation
+GET    /api/v1/vlans                # List VLANs
+POST   /api/v1/vlans/validate       # Validate VLAN configuration
+POST   /api/v1/vlans/calculate      # Preview VLAN parameters
 
-# IP Yönetimi
-POST   /api/v1/ip-assignments       # Cihaza IP tahsis et
-GET    /api/v1/ip-assignments       # IP tahsis listesi
-GET    /api/v1/vlans/{id}/available-ips  # Kullanılabilir IP'leri getir
-GET    /api/v1/vlans/{id}/reserved-ips   # Rezerve IP'leri getir
+# IP Management
+POST   /api/v1/ip-assignments       # Assign IP to device
+GET    /api/v1/ip-assignments       # List IP assignments
+GET    /api/v1/vlans/{id}/available-ips  # Get available IPs
+GET    /api/v1/vlans/{id}/reserved-ips   # Get reserved IPs
 
-# Hiyerarşi & Raporlar
-GET    /api/v1/reports/hierarchy    # Ağ hiyerarşisi raporu
-GET    /api/v1/reports/security     # Güvenlik uyumluluk raporu
-GET    /api/v1/health               # Sistem sağlık kontrolü
+# Hierarchy & Reports
+GET    /api/v1/reports/hierarchy    # Network hierarchy report
+GET    /api/v1/reports/security     # Security compliance report
+GET    /api/v1/health               # System health check
 ```
 
-### 📝 API Kullanım Örnekleri
+### 📝 API Usage Examples
 
 ```bash
-# Yeni domain oluştur
+# Create new domain
 curl -X POST "http://localhost:8000/api/v1/domains" \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "MFG",
+    "name": "Manufacturing",
     "description": "Manufacturing Domain"
   }'
 
-# VLAN oluştur
+# Create VLAN
 curl -X POST "http://localhost:8000/api/v1/vlans" \
   -H "Content-Type: application/json" \
   -d '{
@@ -486,7 +485,7 @@ curl -X POST "http://localhost:8000/api/v1/vlans" \
     "default_gateway": "192.168.1.1"
   }'
 
-# IP tahsis et
+# Assign IP
 curl -X POST "http://localhost:8000/api/v1/ip-assignments" \
   -H "Content-Type: application/json" \
   -d '{
@@ -499,43 +498,43 @@ curl -X POST "http://localhost:8000/api/v1/ip-assignments" \
 
 ---
 
-## 🔒 Güvenlik Özellikleri
+## 🔒 Security Features
 
-- **🔍 Input Validation**: IP adresleri, VLAN ID'leri, MAC adreslerinin kapsamlı doğrulaması
-- **🛡️ Rezerve IP Koruması**: Yönetim IP tahsisinin otomatik engellenmesi
-- **📋 Audit Logging**: Tüm ağ değişiklikleri için tam denetim izi
-- **🔐 Güvenlik Bölgesi Zorlaması**: Sıkı güvenlik tipi doğrulaması
-- **🚧 Ağ Sınırı Saygısı**: IT/OT ağ segmentasyonu uyumluluğu
-- **🔒 CSRF Koruması**: Cross-site request forgery koruması
-- **📜 Content Security Policy**: Production'da sıkı CSP başlıkları
+- **🔍 Input Validation**: Comprehensive validation of IP addresses, VLAN IDs, MAC addresses
+- **🛡️ Reserved IP Protection**: Automatic prevention of management IP assignment
+- **📋 Audit Logging**: Complete audit trail for all network changes
+- **🔐 Security Zone Enforcement**: Strict security type validation
+- **🚧 Network Boundary Respect**: IT/OT network segmentation compliance
+- **🔒 CSRF Protection**: Cross-site request forgery protection
+- **📜 Content Security Policy**: Strict CSP headers in production
 
-### 🔐 Güvenlik Konfigürasyonu
+### 🔐 Security Configuration
 
 ```bash
-# .env dosyasında güvenlik ayarları
+# Security settings in .env file
 SECRET_KEY=your-secret-key-change-in-production-32-chars
-ALLOWED_HOSTS=localhost,*.bosch.com,*.rexroth.com
+ALLOWED_HOSTS=localhost,*.company.com
 CORS_ORIGINS=https://your-frontend-domain.com
 
-# SSL sertifikaları (production için)
-# nginx/ssl/ dizinine sertifikalarınızı yerleştirin
+# SSL certificates (for production)
+# Place your certificates in nginx/ssl/ directory
 ```
 
 ---
 
-## 📈 Performans
+## 📈 Performance
 
-- **⚡ Sub-saniye IP Üretimi**: Otomatik IP tahsisi <1 saniyede tamamlanır
-- **🗃️ Veritabanı Optimizasyonu**: Büyük cihaz envanteri için indeksli sorgular
-- **🔗 Connection Pooling**: Optimize edilmiş veritabanı bağlantı yönetimi
-- **💾 Caching Stratejisi**: Sık erişilen veriler için Redis caching
-- **🎨 Frontend Optimizasyonu**: Code splitting, lazy loading ve virtual scrolling
+- **⚡ Sub-second IP Generation**: Automatic IP allocation completes in <1 second
+- **🗃️ Database Optimization**: Indexed queries for large device inventories
+- **🔗 Connection Pooling**: Optimized database connection management
+- **💾 Caching Strategy**: Redis caching for frequently accessed data
+- **🎨 Frontend Optimization**: Code splitting, lazy loading, and virtual scrolling
 
-### 📊 Performans Metrikleri
+### 📊 Performance Metrics
 
-| Metrik | Hedef | Mevcut |
-|--------|-------|--------|
-| IP Tahsis Süresi | <1s | ~0.3s |
+| Metric | Target | Current |
+|--------|--------|---------|
+| IP Allocation Time | <1s | ~0.3s |
 | API Response Time | <200ms | ~150ms |
 | Frontend Load Time | <3s | ~2.1s |
 | Database Query Time | <100ms | ~75ms |
@@ -553,218 +552,218 @@ REDIS_URL=redis://localhost:6379/0
 
 # Security Configuration
 SECRET_KEY=your-secret-key-change-in-production-32-chars
-ALLOWED_HOSTS=localhost,*.bosch.com,*.rexroth.com
+ALLOWED_HOSTS=localhost,*.company.com
 CORS_ORIGINS=https://your-frontend-domain.com
 
 # Application Configuration
-PLANT_CODE=BURSA
-ORGANIZATION="Bosch Rexroth"
+PLANT_CODE=FACTORY01
+ORGANIZATION="Your Organization"
 LOG_LEVEL=INFO
 
 # Frontend Configuration
 VITE_API_URL=https://your-api-domain.com/api/v1
-VITE_PLANT_CODE=BURSA
-VITE_ORGANIZATION="Bosch Rexroth"
+VITE_PLANT_CODE=FACTORY01
+VITE_ORGANIZATION="Your Organization"
 ```
 
 ### 🐳 Docker Production Deployment
 
 ```bash
-# Production profili ile deploy et
+# Deploy with production profile
 docker-compose --profile production up -d
 
-# Veya individual servisleri build et
+# Or build individual services
 docker build -f Dockerfile.backend -t ip-management-api .
 docker build -f frontend/Dockerfile.frontend -t ip-management-frontend ./frontend
 
-# Servisleri ihtiyaca göre scale et
+# Scale services as needed
 docker-compose up -d --scale api=3 --scale frontend=2
 
-# SSL sertifikalarını konfigüre et
-# nginx/ssl/ dizinine sertifikalarınızı yerleştirin
+# Configure SSL certificates
+# Place your certificates in nginx/ssl/ directory
 ```
 
 ### 🔧 Production Checklist
 
-- [ ] Environment variables konfigüre edildi
-- [ ] SSL sertifikaları yüklendi
-- [ ] Database backup stratejisi kuruldu
-- [ ] Monitoring ve logging konfigüre edildi
-- [ ] Firewall kuralları ayarlandı
-- [ ] Health check endpoint'leri test edildi
-- [ ] Load balancing konfigüre edildi
-- [ ] Security headers ayarlandı
+- [ ] Environment variables configured
+- [ ] SSL certificates installed
+- [ ] Database backup strategy established
+- [ ] Monitoring and logging configured
+- [ ] Firewall rules set up
+- [ ] Health check endpoints tested
+- [ ] Load balancing configured
+- [ ] Security headers set up
 
 ---
 
-## 🛠️ Sorun Giderme
+## 🛠️ Troubleshooting
 
-### 🚨 Yaygın Sorunlar ve Çözümleri
+### 🚨 Common Issues and Solutions
 
-#### 1. Docker Servisleri Başlamıyor
+#### 1. Docker Services Not Starting
 
 ```bash
-# Servislerin durumunu kontrol et
+# Check service status
 docker-compose ps
 
-# Logları kontrol et
+# Check logs
 docker-compose logs
 
-# Port çakışması kontrolü
+# Check port conflicts
 netstat -tulpn | grep :3000
 netstat -tulpn | grep :8000
 netstat -tulpn | grep :5432
 
-# Docker'ı yeniden başlat
+# Restart Docker
 docker-compose down
 docker-compose up -d
 ```
 
-#### 2. Database Bağlantı Hatası
+#### 2. Database Connection Error
 
 ```bash
-# PostgreSQL servisinin çalıştığını kontrol et
+# Check if PostgreSQL service is running
 docker-compose exec postgres pg_isready
 
-# Database'e manuel bağlan
+# Connect to database manually
 docker-compose exec postgres psql -U postgres -d ip_management
 
-# Migration durumunu kontrol et
+# Check migration status
 docker-compose exec api alembic current
 
-# Migration'ları çalıştır
+# Run migrations
 docker-compose exec api alembic upgrade head
 ```
 
-#### 3. Frontend Build Hatası
+#### 3. Frontend Build Error
 
 ```bash
-# Node modules'ları temizle ve yeniden yükle
+# Clean and reinstall node modules
 cd frontend
 rm -rf node_modules package-lock.json
 npm install
 
-# TypeScript hatalarını kontrol et
+# Check TypeScript errors
 npm run type-check
 
-# Build'i test et
+# Test build
 npm run build
 ```
 
-#### 4. API Health Check Başarısız
+#### 4. API Health Check Failed
 
 ```bash
-# API servisinin çalıştığını kontrol et
+# Check if API service is running
 curl http://localhost:8000/health
 
-# API loglarını kontrol et
+# Check API logs
 docker-compose logs api
 
-# Database bağlantısını test et
+# Test database connection
 docker-compose exec api python -c "
 from src.ip_management.database import engine
 print('Database connection:', engine.url)
 "
 ```
 
-#### 5. Redis Cache Sorunları
+#### 5. Redis Cache Issues
 
 ```bash
-# Redis bağlantısını test et
+# Test Redis connection
 docker-compose exec redis redis-cli ping
 
-# Cache'i temizle
+# Clear cache
 docker-compose exec redis redis-cli flushall
 
-# Redis memory kullanımını kontrol et
+# Check Redis memory usage
 docker-compose exec redis redis-cli info memory
 ```
 
-### 📋 Debug Komutları
+### 📋 Debug Commands
 
 ```bash
-# Tüm container'ların resource kullanımını görüntüle
+# View resource usage of all containers
 docker stats
 
-# Belirli bir container'ın detaylarını görüntüle
+# View details of specific container
 docker inspect ip_management_api
 
-# Container'a shell ile bağlan
+# Connect to container with shell
 docker-compose exec api bash
 docker-compose exec frontend sh
 
-# Network bağlantılarını kontrol et
+# Check network connections
 docker network ls
 docker network inspect ip-management_ip_management_network
 ```
 
-### 🔍 Log Analizi
+### 🔍 Log Analysis
 
 ```bash
-# Tüm servislerin loglarını gerçek zamanlı takip et
+# Follow all service logs in real-time
 docker-compose logs -f
 
-# Belirli bir zaman aralığındaki logları görüntüle
+# View logs for specific time range
 docker-compose logs --since="2024-01-01T00:00:00" --until="2024-01-01T23:59:59"
 
-# Hata loglarını filtrele
+# Filter error logs
 docker-compose logs | grep -i error
 
-# API request loglarını takip et
+# Follow API request logs
 docker-compose logs -f api | grep -E "(GET|POST|PUT|DELETE)"
 ```
 
 ---
 
-## 📚 Dokümantasyon
+## 📚 Documentation
 
-### 📖 Detaylı Dokümantasyon
+### 📖 Detailed Documentation
 
-- [Frontend Dokümantasyonu](frontend/README.md) - Detaylı frontend kurulum ve geliştirme rehberi
-- [API Dokümantasyonu](http://localhost:8000/api/docs) - Tam API referansı
-- [Docker Kurulum Rehberi](DOCKER_SETUP.md) - Docker deployment talimatları
-- [Docker Rebuild Rehberi](DOCKER_REBUILD_GUIDE.md) - Container yeniden build rehberi
-- [Frontend Kurulum Rehberi](frontend/SETUP_GUIDE.md) - Frontend geliştirme ortamı kurulumu
+- [Frontend Documentation](frontend/README.md) - Detailed frontend setup and development guide
+- [API Documentation](http://localhost:8000/api/docs) - Complete API reference
+- [Docker Setup Guide](DOCKER_SETUP.md) - Docker deployment instructions
+- [Docker Rebuild Guide](DOCKER_REBUILD_GUIDE.md) - Container rebuild guide
+- [Frontend Setup Guide](frontend/SETUP_GUIDE.md) - Frontend development environment setup
 
-### 🎯 Kullanım Senaryoları
+### 🎯 Usage Scenarios
 
-#### Yeni Domain Oluşturma
-1. Dashboard'a gidin
-2. "Domain Management" sekmesine tıklayın
-3. "Add Domain" butonuna tıklayın
-4. Domain bilgilerini girin (MFG, LOG, FCM, ENG)
-5. "Save" butonuna tıklayın
+#### Creating New Domain
+1. Go to Dashboard
+2. Click "Domain Management" tab
+3. Click "Add Domain" button
+4. Enter domain information (Manufacturing, Logistics, Facility, Engineering)
+5. Click "Save" button
 
-#### VLAN Konfigürasyonu
+#### VLAN Configuration
 1. "Network Configuration" → "VLAN Management"
-2. "Add VLAN" butonuna tıklayın
-3. VLAN ID, subnet, gateway bilgilerini girin
-4. Sistem otomatik olarak IP aralığını hesaplar
-5. Konfigürasyonu kaydedin
+2. Click "Add VLAN" button
+3. Enter VLAN ID, subnet, gateway information
+4. System automatically calculates IP range
+5. Save configuration
 
-#### IP Tahsisi
+#### IP Assignment
 1. "IP Management" → "Device Assignment"
-2. Cihaz bilgilerini girin (CI Name, MAC Address)
-3. VLAN seçin
-4. Otomatik IP tahsisi için "Auto Assign" veya manuel IP girin
-5. "Assign IP" butonuna tıklayın
+2. Enter device information (CI Name, MAC Address)
+3. Select VLAN
+4. Choose "Auto Assign" for automatic IP allocation or enter manual IP
+5. Click "Assign IP" button
 
-### 🔧 API Entegrasyonu
+### 🔧 API Integration
 
 ```python
-# Python ile API kullanımı
+# Python API usage example
 import requests
 
-# Domain oluştur
+# Create domain
 response = requests.post(
     "http://localhost:8000/api/v1/domains",
     json={
-        "name": "MFG",
+        "name": "Manufacturing",
         "description": "Manufacturing Domain"
     }
 )
 
-# VLAN oluştur
+# Create VLAN
 response = requests.post(
     "http://localhost:8000/api/v1/vlans",
     json={
@@ -775,7 +774,7 @@ response = requests.post(
     }
 )
 
-# IP tahsis et
+# Assign IP
 response = requests.post(
     "http://localhost:8000/api/v1/ip-assignments",
     json={
@@ -789,91 +788,48 @@ response = requests.post(
 
 ---
 
-## 🤝 Katkıda Bulunma
+## 🤝 Contributing
 
-1. Repository'yi fork edin
-2. Feature branch oluşturun (`git checkout -b feature/amazing-feature`)
-3. Değişikliklerinizi commit edin (`git commit -m 'Add amazing feature'`)
-4. Branch'inizi push edin (`git push origin feature/amazing-feature`)
-5. Pull Request açın
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-### 📋 Geliştirme Kuralları
+### 📋 Development Guidelines
 
-- Python kodu için PEP 8'i takip edin
-- Tüm frontend kodu için TypeScript kullanın
-- Yeni özellikler için test yazın (unit, property-based, ve E2E)
-- API değişiklikleri için dokümantasyonu güncelleyin
-- PR göndermeden önce tüm testlerin geçtiğinden emin olun
-- Conventional commit mesajlarını takip edin
+- Follow PEP 8 for Python code
+- Use TypeScript for all frontend code
+- Write tests for new features (unit, property-based, and E2E)
+- Update documentation for API changes
+- Ensure all tests pass before submitting PR
+- Follow conventional commit messages
 
-### 🧪 Test Gereksinimleri
+### 🧪 Test Requirements
 
 ```bash
-# Tüm testlerin geçmesi gerekli
-npm test                    # Frontend testleri
-uv run pytest             # Backend testleri
-npm run test:e2e           # E2E testleri
+# All tests must pass
+npm test                    # Frontend tests
+uv run pytest             # Backend tests
+npm run test:e2e           # E2E tests
 
-# Code coverage minimum %80 olmalı
+# Code coverage minimum 80%
 npm run test:coverage      # Frontend coverage
 uv run pytest --cov=src   # Backend coverage
 ```
 
 ---
 
-## 📄 Lisans
+## 📄 License
 
-Bu proje MIT Lisansı altında lisanslanmıştır - detaylar için [LICENSE](LICENSE) dosyasına bakın.
-
----
-
-## 👥 Yazarlar
-
-- **Şevket Binali** - *İlk geliştirme* - [GitHub Profile](https://github.com/sevketbinali)
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 🏢 Organizasyon
+## 👥 Authors
 
-**Bosch Rexroth Bursa Fabrikası**  
-IT/OT Ağ Altyapısı Yönetimi  
-Endüstriyel Otomasyon & Kontrol Sistemleri
+- **Şevket Binali** - *Initial work* - [GitHub Profile](https://github.com/sevketbinali)
 
 ---
 
-## 📞 Destek
-
-Sorularınız veya sorunlarınız için:
-
-- 📧 **Email**: [destek@bosch-rexroth.com](mailto:destek@bosch-rexroth.com)
-- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/your-org/ip-management/issues)
-- 📚 **Dokümantasyon**: [Wiki](https://github.com/your-org/ip-management/wiki)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/your-org/ip-management/discussions)
-
----
-
-## 🎯 Roadmap
-
-### 🚀 Yakın Dönem (Q1 2024)
-- [ ] LDAP/Active Directory entegrasyonu
-- [ ] Gelişmiş raporlama dashboard'u
-- [ ] Mobile responsive iyileştirmeleri
-- [ ] Bulk IP import/export özelliği
-
-### 🔮 Orta Vadeli (Q2-Q3 2024)
-- [ ] Multi-tenant desteği
-- [ ] REST API v2 geliştirmeleri
-- [ ] Grafana monitoring entegrasyonu
-- [ ] Automated backup sistemi
-
-### 🌟 Uzun Vadeli (Q4 2024+)
-- [ ] AI-powered network optimization
-- [ ] IoT device auto-discovery
-- [ ] Multi-site federation
-- [ ] Advanced security analytics
-
----
-
-*Endüstriyel ağ yönetimi için ❤️ ile geliştirilmiştir*
-
-**🏭 Bosch Rexroth Bursa Factory | IT/OT Network Infrastructure Management**
+*Built with ❤️ for industrial network management*
