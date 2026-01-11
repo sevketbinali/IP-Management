@@ -19,7 +19,6 @@ import {
   TrashIcon,
   EyeIcon,
 } from '@heroicons/react/24/outline';
-import { Layout } from './Layout';
 import { useIpStore } from '@/stores/useIPStore';
 import { useVlanStore } from '@/stores/useVLANStore';
 import { useDomainStore } from '@/stores/useDomainStore';
@@ -169,8 +168,7 @@ const DeviceManagement: React.FC = () => {
   };
 
   return (
-    <Layout>
-      <div className="space-y-6">
+    <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -568,8 +566,7 @@ const DeviceManagement: React.FC = () => {
           </div>
         </div>
       </div>
-    </Layout>
-  );
-};
+    );
+  };
 
 export { DeviceManagement };

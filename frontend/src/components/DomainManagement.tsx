@@ -14,7 +14,6 @@ import {
   TrashIcon,
   EyeIcon,
 } from '@heroicons/react/24/outline';
-import { Layout } from './Layout';
 import { useDomainStore } from '@/stores/useDomainStore';
 import { cn, formatDateTime } from '@/utils';
 
@@ -41,7 +40,6 @@ const DomainManagement: React.FC = () => {
   );
 
   return (
-    <Layout>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -222,8 +220,7 @@ const DomainManagement: React.FC = () => {
           </div>
         </div>
       </div>
-    </Layout>
-  );
-};
+    );
+  };
 
 export { DomainManagement };
