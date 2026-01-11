@@ -37,20 +37,20 @@ const DomainVlanView: React.FC = () => {
   }, [domainId, fetchDomain, fetchVlansByDomain, fetchDevices]);
 
   // Filter devices for this domain
-  const domainDevices = devices.filter(device => 
-    vlans.some(vlan => vlan.id === device.vlanId)
+  const domainDevices = (devices || []).filter(device => 
+    (vlans || []).some(vlan => vlan.id === device.vlanId)
   );
 
   // Calculate domain statistics
   const domainStats = {
-    totalVlans: vlans.length,
-    activeVlans: vlans.filter(v => v.status === 'active').length,
+    totalVlans: (vlans || []).length,
+    activeVlans: (vlans || []).filter(v => v.status === 'active').length,
     totalDevices: domainDevices.length,
     activeDevices: domainDevices.filter(d => d.status === 'active').length,
-    totalIps: vlans.reduce((sum, vlan) => sum + vlan.totalIps, 0),
-    usedIps: vlans.reduce((sum, vlan) => sum + vlan.usedIps, 0),
-    utilization: vlans.length > 0 ? 
-      Math.round(vlans.reduce((sum, vlan) => sum + vlan.utilization, 0) / vlans.length) : 0,
+    totalIps: (vlans || []).reduce((sum, vlan) => sum + vlan.totalIps, 0),
+    usedIps: (vlans || []).reduce((sum, vlan) => sum + vlan.usedIps, 0),
+    utilization: (vlans || []).length > 0 ? 
+      Math.round((vlans || []).reduce((sum, vlan) => sum + vlan.utilization, 0) / (vlans || []).length) : 0,
   };
 
   const loading = domainLoading || vlansLoading;
@@ -227,7 +227,7 @@ const DomainVlanView: React.FC = () => {
             {/* VLANs Tab */}
             {activeTab === 'vlans' && (
               <div className="space-y-4">
-                {vlans.length === 0 ? (
+                {(vlans || []).length === 0 ? (
                   <div className="text-center py-8">
                     <ServerIcon className="mx-auto h-12 w-12 text-gray-400" />
                     <h3 className="mt-2 text-sm font-medium text-gray-900">VLAN bulunamadı</h3>
@@ -237,7 +237,7 @@ const DomainVlanView: React.FC = () => {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {vlans.map((vlan) => (
+                    {(vlans || []).map((vlan) => (
                       <div key={vlan.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center">
@@ -355,7 +355,7 @@ const DomainVlanView: React.FC = () => {
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
                         {domainDevices.slice(0, 10).map((device) => {
-                          const vlan = vlans.find(v => v.id === device.vlanId);
+                          const vlan = (vlans || []).find(v => v.id === device.vlanId);
                           return (
                             <tr key={device.id} className="hover:bg-gray-50">
                               <td className="px-6 py-4 whitespace-nowrap">

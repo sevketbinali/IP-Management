@@ -107,7 +107,7 @@ const VlanManagement: React.FC = () => {
   }, [vlans]);
 
   // Filter VLANs based on current filters
-  const filteredVlans = allVlans.filter(vlan => {
+  const filteredVlans = (allVlans || []).filter(vlan => {
     const matchesSearch = !filters.search || 
       vlan.name.toLowerCase().includes(filters.search.toLowerCase()) ||
       vlan.vlanId.toString().includes(filters.search) ||
@@ -261,7 +261,7 @@ const VlanManagement: React.FC = () => {
                       className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                     >
                       <option value="">Tüm Domainler</option>
-                      {domains.map(domain => (
+                      {(domains || []).map(domain => (
                         <option key={domain.id} value={domain.id}>
                           {domain.name}
                         </option>
@@ -541,7 +541,7 @@ const VlanManagement: React.FC = () => {
                 <div className="ml-5 w-0 flex-1">
                   <dl>
                     <dt className="text-sm font-medium text-gray-500 truncate">Toplam VLAN</dt>
-                    <dd className="text-lg font-medium text-gray-900">{allVlans.length}</dd>
+                    <dd className="text-lg font-medium text-gray-900">{(allVlans || []).length}</dd>
                   </dl>
                 </div>
               </div>
@@ -558,7 +558,7 @@ const VlanManagement: React.FC = () => {
                   <dl>
                     <dt className="text-sm font-medium text-gray-500 truncate">Aktif VLAN</dt>
                     <dd className="text-lg font-medium text-gray-900">
-                      {allVlans.filter(v => v.status === 'active').length}
+                      {(allVlans || []).filter(v => v.status === 'active').length}
                     </dd>
                   </dl>
                 </div>
@@ -576,7 +576,7 @@ const VlanManagement: React.FC = () => {
                   <dl>
                     <dt className="text-sm font-medium text-gray-500 truncate">Uyarı</dt>
                     <dd className="text-lg font-medium text-gray-900">
-                      {allVlans.filter(v => v.status === 'warning').length}
+                      {(allVlans || []).filter(v => v.status === 'warning').length}
                     </dd>
                   </dl>
                 </div>
@@ -596,7 +596,7 @@ const VlanManagement: React.FC = () => {
                   <dl>
                     <dt className="text-sm font-medium text-gray-500 truncate">Ort. Kullanım</dt>
                     <dd className="text-lg font-medium text-gray-900">
-                      {allVlans.length > 0 ? Math.round(allVlans.reduce((sum, v) => sum + v.utilization, 0) / allVlans.length) : 0}%
+                      {(allVlans || []).length > 0 ? Math.round((allVlans || []).reduce((sum, v) => sum + v.utilization, 0) / (allVlans || []).length) : 0}%
                     </dd>
                   </dl>
                 </div>

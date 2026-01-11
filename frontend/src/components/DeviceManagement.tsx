@@ -79,7 +79,7 @@ const DeviceManagement: React.FC = () => {
   }, [fetchDevices, fetchVlans, fetchDomains]);
 
   // Filter devices based on current filters
-  const filteredDevices = devices.filter(device => {
+  const filteredDevices = (devices || []).filter(device => {
     const vlan = vlans.find(v => v.id === device.vlanId);
     const domain = domains.find(d => d.id === vlan?.domainId);
 
@@ -251,7 +251,7 @@ const DeviceManagement: React.FC = () => {
                       className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                     >
                       <option value="">Tüm Domainler</option>
-                      {domains.map(domain => (
+                      {(domains || []).map(domain => (
                         <option key={domain.id} value={domain.id}>
                           {domain.name}
                         </option>
@@ -268,7 +268,7 @@ const DeviceManagement: React.FC = () => {
                       className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                     >
                       <option value="">Tüm VLAN'lar</option>
-                      {vlans.map(vlan => (
+                      {(vlans || []).map(vlan => (
                         <option key={vlan.id} value={vlan.id}>
                           VLAN {vlan.vlanId} - {vlan.name}
                         </option>

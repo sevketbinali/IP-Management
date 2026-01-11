@@ -79,18 +79,18 @@ const IPManagementDashboard: React.FC = () => {
   // Calculate statistics when data changes
   useEffect(() => {
     const calculateStats = () => {
-      const totalDevices = devices.length;
-      const activeDevices = devices.filter(d => d.status === 'active').length;
-      const conflictDevices = devices.filter(d => d.status === 'conflict').length;
+      const totalDevices = (devices || []).length;
+      const activeDevices = (devices || []).filter(d => d.status === 'active').length;
+      const conflictDevices = (devices || []).filter(d => d.status === 'conflict').length;
       
       // Calculate IP utilization across all VLANs
-      const totalIps = vlans.reduce((sum, vlan) => sum + vlan.totalIps, 0);
-      const usedIps = vlans.reduce((sum, vlan) => sum + vlan.usedIps, 0);
+      const totalIps = (vlans || []).reduce((sum, vlan) => sum + vlan.totalIps, 0);
+      const usedIps = (vlans || []).reduce((sum, vlan) => sum + vlan.usedIps, 0);
       const utilization = totalIps > 0 ? Math.round((usedIps / totalIps) * 100) : 0;
 
       setStats({
-        totalDomains: domains.length,
-        totalVlans: vlans.length,
+        totalDomains: (domains || []).length,
+        totalVlans: (vlans || []).length,
         totalDevices,
         ipUtilization: utilization,
         activeDevices,
@@ -105,14 +105,14 @@ const IPManagementDashboard: React.FC = () => {
   // Generate network overview
   useEffect(() => {
     const generateOverview = () => {
-      const overview = domains.map(domain => {
-        const domainVlans = vlans.filter(v => v.domainId === domain.id);
-        const domainDevices = devices.filter(d => 
+      const overview = (domains || []).map(domain => {
+        const domainVlans = (vlans || []).filter(v => v.domainId === domain.id);
+        const domainDevices = (devices || []).filter(d => 
           domainVlans.some(v => v.id === d.vlanId)
         );
 
-        const totalIps = domainVlans.reduce((sum, vlan) => sum + vlan.totalIps, 0);
-        const usedIps = domainVlans.reduce((sum, vlan) => sum + vlan.usedIps, 0);
+        const totalIps = domainVlans.reduce((sum, vlan) => sum + (vlan.totalIps || 0), 0);
+        const usedIps = domainVlans.reduce((sum, vlan) => sum + (vlan.usedIps || 0), 0);
         const utilization = totalIps > 0 ? Math.round((usedIps / totalIps) * 100) : 0;
 
         // Determine status based on utilization and conflicts

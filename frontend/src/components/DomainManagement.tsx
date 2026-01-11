@@ -35,7 +35,7 @@ const DomainManagement: React.FC = () => {
   }, [fetchDomains]);
 
   // Filter domains based on search term
-  const filteredDomains = domains.filter(domain =>
+  const filteredDomains = (domains || []).filter(domain =>
     domain.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     domain.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -196,25 +196,25 @@ const DomainManagement: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div className="text-center">
                 <div className="text-2xl font-bold text-blue-600">
-                  {domains.length}
+                  {(domains || []).length}
                 </div>
                 <div className="text-sm text-gray-500">Toplam Domain</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-600">
-                  {domains.reduce((sum, domain) => sum + domain.valueStreamCount, 0)}
+                  {(domains || []).reduce((sum, domain) => sum + (domain.valueStreamCount || 0), 0)}
                 </div>
                 <div className="text-sm text-gray-500">Toplam Value Stream</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-purple-600">
-                  {domains.filter(d => d.name.includes('MFG')).length}
+                  {(domains || []).filter(d => d.name.includes('MFG')).length}
                 </div>
                 <div className="text-sm text-gray-500">Üretim Domainleri</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-orange-600">
-                  {domains.filter(d => d.name.includes('LOG')).length}
+                  {(domains || []).filter(d => d.name.includes('LOG')).length}
                 </div>
                 <div className="text-sm text-gray-500">Lojistik Domainleri</div>
               </div>

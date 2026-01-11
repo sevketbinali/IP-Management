@@ -58,14 +58,14 @@ const ReportsAnalytics: React.FC = () => {
   }, [fetchDomains, fetchVlans, fetchDevices]);
 
   // Calculate utilization statistics
-  const utilizationStats = domains.map(domain => {
-    const domainVlans = vlans.filter(v => v.domainId === domain.id);
-    const domainDevices = devices.filter(d => 
+  const utilizationStats = (domains || []).map(domain => {
+    const domainVlans = (vlans || []).filter(v => v.domainId === domain.id);
+    const domainDevices = (devices || []).filter(d => 
       domainVlans.some(v => v.id === d.vlanId)
     );
 
-    const totalIps = domainVlans.reduce((sum, vlan) => sum + vlan.totalIps, 0);
-    const usedIps = domainVlans.reduce((sum, vlan) => sum + vlan.usedIps, 0);
+    const totalIps = domainVlans.reduce((sum, vlan) => sum + (vlan.totalIps || 0), 0);
+    const usedIps = domainVlans.reduce((sum, vlan) => sum + (vlan.usedIps || 0), 0);
     const utilization = totalIps > 0 ? Math.round((usedIps / totalIps) * 100) : 0;
 
     return {
@@ -82,18 +82,18 @@ const ReportsAnalytics: React.FC = () => {
   });
 
   // Calculate security compliance
-  const securityCompliance = domains.map(domain => {
-    const domainVlans = vlans.filter(v => v.domainId === domain.id);
+  const securityCompliance = (domains || []).map(domain => {
+    const domainVlans = (vlans || []).filter(v => v.domainId === domain.id);
     const securityZones = domainVlans.reduce((zones, vlan) => {
       const existing = zones.find(z => z.securityType === vlan.securityType);
       if (existing) {
         existing.vlanCount++;
-        existing.deviceCount += vlan.usedIps;
+        existing.deviceCount += (vlan.usedIps || 0);
       } else {
         zones.push({
           securityType: vlan.securityType,
           vlanCount: 1,
-          deviceCount: vlan.usedIps,
+          deviceCount: (vlan.usedIps || 0),
           lastFirewallCheck: vlan.lastFirewallCheck,
           complianceStatus: 'compliant' as const,
         });
@@ -201,7 +201,7 @@ const ReportsAnalytics: React.FC = () => {
                   className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">Tüm Domainler</option>
-                  {domains.map(domain => (
+                  {(domains || []).map(domain => (
                     <option key={domain.id} value={domain.id}>
                       {domain.name}
                     </option>
